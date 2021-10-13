@@ -410,32 +410,34 @@ public class BlockFiles {
         handler.writeObject(session.getPath() + "/blocks/" + block.getHash(),block);
         
         for (int i = 0; i < block.data.size(); i++) {
-            Object data = block.data.get(i);
-            if (i == 0) {
-                saveUTXO((Transaction) data);
-            } else if (data instanceof Transaction) {
-                saveUTXO((Transaction) data);
-                deleteUTXO((Transaction) data);
-            } else if (data instanceof BorrowContract) {
-                saveBorrowContract((BorrowContract) data);
-                saveUTXO(((BorrowContract) data).getValidatorCommission());
-                deleteUTXO(((BorrowContract) data).getValidatorCommission());
-            } else if (data instanceof LendContract) {
-                BorrowContract bcontract = getBorrowContract(((LendContract) data).getBorrowContractHash());
-                saveUTXOLend(((LendContract) data).getLendTransaction(),bcontract);
-                deleteUTXO(((LendContract) data).getLendTransaction());
-                saveLendContract((LendContract) data);
-            } else if (data instanceof StakeContract) {
-                saveStakeContract((StakeContract) data);
-                saveUTXO(((StakeContract) data).getValidatorCommission());
-                deleteUTXO(((StakeContract) data).getValidatorCommission());
-            } else if (data instanceof Penalty) {
-                savePenalty((Penalty) data);
-            }
-            deletePendingObject(data);
-            if (this.lentFundsUpdated) {
-                this.session.getWallet().generateBaseOutputs(String.valueOf(System.currentTimeMillis()));
-            }
+            try {
+                Object data = block.data.get(i);
+                if (i == 0) {
+                    saveUTXO((Transaction) data);
+                } else if (data instanceof Transaction) {
+                    saveUTXO((Transaction) data);
+                    deleteUTXO((Transaction) data);
+                } else if (data instanceof BorrowContract) {
+                    saveBorrowContract((BorrowContract) data);
+                    saveUTXO(((BorrowContract) data).getValidatorCommission());
+                    deleteUTXO(((BorrowContract) data).getValidatorCommission());
+                } else if (data instanceof LendContract) {
+                    BorrowContract bcontract = getBorrowContract(((LendContract) data).getBorrowContractHash());
+                    saveUTXOLend(((LendContract) data).getLendTransaction(),bcontract);
+                    deleteUTXO(((LendContract) data).getLendTransaction());
+                    saveLendContract((LendContract) data);
+                } else if (data instanceof StakeContract) {
+                    saveStakeContract((StakeContract) data);
+                    saveUTXO(((StakeContract) data).getValidatorCommission());
+                    deleteUTXO(((StakeContract) data).getValidatorCommission());
+                } else if (data instanceof Penalty) {
+                    savePenalty((Penalty) data);
+                }
+                deletePendingObject(data);
+                if (this.lentFundsUpdated) {
+                    this.session.getWallet().generateBaseOutputs(String.valueOf(System.currentTimeMillis()));
+                }
+            } catch (Exception e) {}
         }
         this.lentFundsUpdated = false;
     }

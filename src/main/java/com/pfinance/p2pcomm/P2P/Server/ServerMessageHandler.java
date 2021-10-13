@@ -67,7 +67,9 @@ public class ServerMessageHandler {
                     thread.sendMessage(Message.DOWNLOADBLOCKRECEIVED, value);
                 }
                 case Message.REQUESTPENDING -> {
-                    session.getBlockFileHandler().sendPendingObjects(thread);
+                    if (session.getValidation()) {
+                        session.getBlockFileHandler().sendPendingObjects(thread);
+                    }
                 }
                 case Message.BROADCASTTXN -> {
                     synchronized(this) {
