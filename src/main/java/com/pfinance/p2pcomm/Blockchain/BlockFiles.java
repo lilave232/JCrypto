@@ -213,6 +213,7 @@ public class BlockFiles {
                 return file.isFile();
             }
         });
+        if (files == null) return 0;
         for (int x = 0; x < files.length; x++) {
             Penalty penalty = (Penalty) handler.readObject(files[x].getPath());
             if (penalty != null) returnValue += penalty.getTransaction().sum();
@@ -500,7 +501,7 @@ public class BlockFiles {
     
     public static File[] recursiveListFiles(File dir, FileFilter filter) {
         if (!dir.isDirectory())
-            throw new IllegalArgumentException(dir + " is not a directory");
+            return new File[0];
         List<File> fileList = new ArrayList<File>();
         recursiveListFilesHelper(dir, filter, fileList);
         return fileList.toArray(new File[fileList.size()]);
