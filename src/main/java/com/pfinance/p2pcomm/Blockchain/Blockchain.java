@@ -151,21 +151,29 @@ public class Blockchain {
         return flag;
     }
     
-    public void addPendingTxn(Object data) throws IOException, ClassNotFoundException, FileNotFoundException, Exception {
-        if (data instanceof Transaction) {addPending((Transaction) data);}
-        else if (data instanceof BorrowContract) {addPending(((BorrowContract) data).getValidatorCommission());}
-        else if (data instanceof LendContract) {addPending(((LendContract) data).getLendTransaction());}
-        else if (data instanceof StakeContract) {addPending(((StakeContract) data).getValidatorCommission());}
-        else if (data instanceof Penalty) {if (!this.blockValidator.verifyPenaltyPending((Penalty) data)) return;}
+    public boolean addPendingTxn(Object data) throws IOException, ClassNotFoundException, FileNotFoundException, Exception {
+        boolean flag = false;
+        if (data instanceof Transaction) {flag = addPending((Transaction) data);}
+        else if (data instanceof BorrowContract) {flag = addPending(((BorrowContract) data).getValidatorCommission());}
+        else if (data instanceof LendContract) {flag = addPending(((LendContract) data).getLendTransaction());}
+        else if (data instanceof StakeContract) {flag = addPending(((StakeContract) data).getValidatorCommission());}
+        else if (data instanceof Penalty) {if (!this.blockValidator.verifyPenaltyPending((Penalty) data)) return flag;}
         session.getBlockFileHandler().savePendingObject(data);
+        return flag;
     }
     
-    public void addPending(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException {
+    public boolean addPending(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException {
+        boolean flag = true;
         for (TransactionInput input : transaction.getInputs()) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
-            if (!this.pendingUTXOs.contains(utxo.getPreviousHash() + "|" + utxo.getIndex()))
+            if (utxo == null) return false;
+            if (!this.pendingUTXOs.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) {
                 this.pendingUTXOs.add(utxo.getPreviousHash() + "|" + utxo.getIndex());
+            } else {
+                flag = false;
+            }
         }
+        return flag;
     }
     
     public Penalty generatePenalty(StakeContract contract, String timestamp) {

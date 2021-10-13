@@ -297,6 +297,7 @@ public class Wallet {
     public ArrayList<TransactionOutput> generateBaseOutputs(String timestamp) {
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
         HashMap<String,Float> outputValues = new HashMap<>();
+        if (this.stakeContract == null) return new ArrayList<TransactionOutput>();
         Validator user = session.getValidators().getValidator(this.stakeContract.getHash());
         try {
             ArrayList<TransactionOutput> tempOutputs = new ArrayList<>();
