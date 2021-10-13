@@ -562,9 +562,8 @@ public class BlockFiles {
             FileHandler handler = new FileHandler();
             for (String path : allObjects) {
                 Object object = handler.readObject(path);
-                if (session.getBlockchain().addPendingTxn(object)) {
-                    session.getBlockchain().addData(object);
-                };
+                session.getBlockchain().addPendingTxn(object);
+                session.getBlockchain().addData(object);
                 
             }
         } catch (Exception e) {}
