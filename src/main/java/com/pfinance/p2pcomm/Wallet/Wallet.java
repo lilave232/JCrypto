@@ -162,7 +162,6 @@ public class Wallet {
     
     public float getBorrowedBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
         float returnValue = 0;
-        FileHandler handler = new FileHandler();
         File f = new File(session.getPath() + "/contracts/borrow/" + hash + "/lentFunds");
         File[] files = f.listFiles(new FileFilter() {
             @Override
@@ -171,8 +170,8 @@ public class Wallet {
             }
         });
         if (files == null) return returnValue;
-        for (int x = 0; x < files.length; x++) {
-            UTXO utxo = loadUTXO(files[x].getPath());
+        for (File file : files) {
+            UTXO utxo = loadUTXO(file.getPath());
             returnValue += utxo.toFloat();
         }
         return returnValue;
@@ -202,7 +201,7 @@ public class Wallet {
         float borrowBalance = getBorrowedBalance();
         float lentBalance = getLentBalance();
         float penaltyBalance = getPenaltyBalance();
-        StringBuffer returnString = new StringBuffer();
+        StringBuilder returnString = new StringBuilder();
         returnString.append(String.format("|%-131s|\n", this.name + " Wallet Balance").replace(' ', '-'));
         returnString.append(String.format("|%-131s|\n", "Usable Balance: " + usableBalance));
         returnString.append(String.format("|%-131s|\n", "Borrowed Balance: " + borrowBalance));
@@ -296,16 +295,16 @@ public class Wallet {
     }
     
     public ArrayList<TransactionOutput> generateBaseOutputs(String timestamp) {
-        ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+        ArrayList<TransactionOutput> outputs = new ArrayList<>();
         HashMap<String,Float> outputValues = new HashMap<>();
         Validator user = session.getValidators().getValidator(this.stakeContract.getHash());
         try {
-            ArrayList<TransactionOutput> tempOutputs = new ArrayList<TransactionOutput>();
+            ArrayList<TransactionOutput> tempOutputs = new ArrayList<>();
             tempOutputs.addAll(session.getBlockFileHandler().getLentFunds(this.stakeContract.getBorrowContractHash()));
             tempOutputs.addAll(session.getBlockFileHandler().getPenaltyOutputs(this.stakeContract.getHash()));
-            for (TransactionOutput output : tempOutputs) {
+            tempOutputs.forEach(output -> {
                 outputValues.put(output.address, outputValues.getOrDefault(output.address, (float)0) + output.value);
-            }
+            });
             outputValues.forEach((k,v)-> {
                 TransactionOutput output = new TransactionOutput(k,(v/user.getBalance())*session.getBlockValidator().getReward(timestamp));
                 outputs.add(output);
@@ -313,7 +312,7 @@ public class Wallet {
             FileHandler handler = new FileHandler();
             handler.writeObject(session.getPath() + "/wallets/" + session.getWallet().name + "/baseOutputs", outputs);
             return outputs;
-        } catch (Exception e) {
+        } catch (IOException e) {
             return outputs;
         } 
     }
@@ -349,10 +348,10 @@ public class Wallet {
         Transaction txn = new Transaction();
         float outputValue = 0;
         float inputValue = 0;
-        for (TransactionOutput output : outputs) {
+        outputValue = outputs.stream().map(output -> {
             txn.addOutput(output);
-            outputValue += output.value;
-        }
+            return output;
+        }).map(output -> output.value).reduce(outputValue, (accumulator, _item) -> accumulator + _item);
         for (UTXO utxo : getUTXOInputs(outputValue)) {
             txn.addInput(utxo.getInput(this.getKey()));
             inputValue += utxo.toFloat();
