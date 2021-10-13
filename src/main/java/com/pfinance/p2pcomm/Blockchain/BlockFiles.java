@@ -563,7 +563,9 @@ public class BlockFiles {
             for (String path : allObjects) {
                 Object object = handler.readObject(path);
                 session.getBlockchain().addPendingTxn(object);
-                session.getBlockchain().addData(object);
+                if (!session.getBlockchain().addData(object)) {
+                    this.deletePendingObject(object);
+                };
                 
             }
         } catch (Exception e) {}
