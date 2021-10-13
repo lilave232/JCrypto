@@ -161,10 +161,13 @@ public class Blockchain {
         session.getBlockFileHandler().savePendingObject(data);
     }
     
-    public void addPending(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException {
+    public void addPending(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         for (TransactionInput input : transaction.getInputs()) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
-            if (utxo == null) return;
+            if (utxo == null) {
+                session.getBlockFileHandler().deletePendingObject(transaction);
+                return;
+            }
             if (!this.pendingUTXOs.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) {
                 this.pendingUTXOs.add(utxo.getPreviousHash() + "|" + utxo.getIndex());
             }
