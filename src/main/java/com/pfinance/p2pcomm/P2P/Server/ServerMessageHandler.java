@@ -113,7 +113,7 @@ public class ServerMessageHandler {
                             ByteArrayInputStream in = new ByteArrayInputStream(object);
                             ObjectInputStream is = new ObjectInputStream(in);
                             SignedVote vote = (SignedVote) is.readObject();
-                            
+                     
                             Validator validator = session.getValidators().getValidator(vote.getStakeHash());
                             if (validator == null) return;
                             if (Float.compare(validator.getBalance(), session.getBlockValidator().getStakeRequirement()) < 0) return;
@@ -128,6 +128,9 @@ public class ServerMessageHandler {
                             in = new ByteArrayInputStream(object);
                             is = new ObjectInputStream(in);
                             Block block = (Block) is.readObject();
+                            
+                            if (session.getBlockFileHandler().getBlock(block.getHash()) != null)
+                                return;
 
                             session.getPeer().getBallotBox().addVote(block.getHash(),VoteType.BLOCK, vote);
                             int checkVote = session.getPeer().getBallotBox().checkVotes(block.getHash(),VoteType.BLOCK);
