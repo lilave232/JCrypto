@@ -13,7 +13,7 @@
     <body>
         <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
         <div class="container text-center text-light position-absolute top-50 start-50 translate-middle">
-            <form action="http://localhost:8080/createFolder" method="post"> 
+            <form action="/createFolder" method="post"> 
                 <h1>Welcome to JCrpyto Peer!</h1>
                 <h2>Set The Name of The Folder:</h2>
                 <input class="btn btn-outline-light m-2 fs-3" type="text" name="folder"/>

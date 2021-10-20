@@ -14,7 +14,7 @@
     <body>
         <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
         <div class="container text-center text-light position-absolute top-50 start-50 translate-middle">
-            <form action="http://localhost:8080/loadFolder" method="post"> 
+            <form action="/loadFolder" method="post"> 
                 <h1>Welcome to JCrpyto Peer!</h1>
                 <h2>Select Folder:</h2>
                 <c:forEach items="${chainFolders}" var="folder">
