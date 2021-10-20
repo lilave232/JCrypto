@@ -96,6 +96,7 @@ public class Session {
     public ArrayList<Wallet> getWallets() {
         ArrayList<Wallet> returnArray = new ArrayList<>();
         String[] walletNames = this.blockFileHandler.getWallets();
+        System.out.println(String.join(",", walletNames));
         for (int i = 0; i < walletNames.length; i++) {
             try {
                 returnArray.add(new Wallet(this).loadWallet(walletNames[i]));
