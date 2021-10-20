@@ -69,7 +69,7 @@ public class WebServer extends Thread {
             ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
             servletContextHandler.setResourceBase(baseUri.toASCIIString());
-            //servletContextHandler.setResourceBase("/Users/averypozzobon/NetBeansProjects/P2PComm/target/classes/webroot");
+            //servletContextHandler.setResourceBase("NetBeansProjects/P2PComm/target/classes/webroot");
 
             // Since this is a ServletContextHandler we must manually configure JSP support.
             this.enableEmbeddedJspSupport(servletContextHandler);
@@ -117,7 +117,7 @@ public class WebServer extends Thread {
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
             holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");
-            //holderDefault.setInitParameter("resourceBase", "/Users/averypozzobon/NetBeansProjects/P2PComm/target/classes/webroot" + "static/");
+            //holderDefault.setInitParameter("resourceBase", "NetBeansProjects/P2PComm/target/classes/webroot" + "static/");
             holderDefault.setInitParameter("dirAllowed", "true");
             servletContextHandler.addServlet(new ServletHolder(new DefaultServlet()), "/static/*");
             server.setHandler(servletContextHandler);
