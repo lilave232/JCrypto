@@ -93,6 +93,19 @@ public class Session {
         
     }
     
+    public ArrayList<Wallet> getWallets() {
+        ArrayList<Wallet> returnArray = new ArrayList<>();
+        String[] walletNames = this.blockFileHandler.getWallets();
+        for (int i = 0; i < walletNames.length; i++) {
+            try {
+                returnArray.add(new Wallet(this).loadWallet(walletNames[i]));
+            } catch (IOException ex) {
+                Logger.getLogger(Session.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return returnArray;
+    }
+    
     public Wallet getWallet() {return this.activeWallet;}
     public Peer getPeer() {return this.peer;}
     public Blockchain getBlockchain() {return this.blockchain;}
@@ -103,6 +116,7 @@ public class Session {
     public void setValidation() throws Exception {
         if (this.validation) {
             miner.stopMiner();
+            this.blockchain.block = null;
             this.validation = false;
             return;
         }

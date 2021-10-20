@@ -19,6 +19,7 @@ import com.pfinance.p2pcomm.Transaction.Transaction;
 import com.pfinance.p2pcomm.Transaction.TransactionInput;
 import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import com.pfinance.p2pcomm.Transaction.UTXO;
+import com.pfinance.p2pcomm.Wallet.Wallet;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -27,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.xml.bind.DatatypeConverter;
@@ -173,9 +176,28 @@ public class BlockFiles {
         return (BorrowContract) handler.readObject(session.getPath() + "/contracts/borrow/" + hash + "/contract");
     }
     
+    public BorrowContract getBorrowContract(String hash, String address) throws IOException, FileNotFoundException, FileNotFoundException, ClassNotFoundException {
+        FileHandler handler = new FileHandler();
+        String path = this.getWalletPath(address);
+        return (BorrowContract) handler.readObject(path + "/contracts/borrow/contract");
+    }
+    
+    public StakeContract getStakeContract(String hash, String address)  throws IOException, FileNotFoundException, FileNotFoundException, ClassNotFoundException {
+        FileHandler handler = new FileHandler();
+        String path = this.getWalletPath(address);
+        return (StakeContract) handler.readObject(path + "/contracts/stake/contract");
+    }
+    
     public StakeContract getStakeContract(String hash)  throws IOException, FileNotFoundException, FileNotFoundException, ClassNotFoundException {
         FileHandler handler = new FileHandler();
         return (StakeContract) handler.readObject(session.getPath() + "/contracts/stake/" + hash + "/contract");
+    }
+    
+    public float getBorrowedBalance(Validator validator, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        StakeContract contract = getStakeContract(validator.getStakeHash(), address);
+        if (contract == null) return 0;
+        float returnValue = getBorrowBalance(contract.getBorrowContractHash(),address) + getPenaltyBalance(contract.getHash());
+        return returnValue;
     }
     
     public float getBorrowedBalance(Validator validator) throws IOException, FileNotFoundException, ClassNotFoundException {
@@ -185,6 +207,23 @@ public class BlockFiles {
         return returnValue;
     }
     
+    public float getBorrowBalance(String hash, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        float returnValue = 0;
+        FileHandler handler = new FileHandler();
+        String path = this.getWalletPath(address);
+        File f = new File(path + "/contracts/borrow/lentFunds");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        for (int x = 0; x < files.length; x++) {
+            UTXO utxo = loadUTXO(files[x].getPath());
+            returnValue += utxo.toFloat();
+        }
+        return returnValue;
+    }
      
     public float getBorrowBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
         float returnValue = 0;
@@ -221,9 +260,42 @@ public class BlockFiles {
         return returnValue;
     }
     
+    public float getPenaltyBalance(String hash,String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        float returnValue = 0;
+        FileHandler handler = new FileHandler();
+        String path = this.getWalletPath(address);
+        File f = new File(path + "/contracts/stake/penalties");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) return 0;
+        for (int x = 0; x < files.length; x++) {
+            Penalty penalty = (Penalty) handler.readObject(files[x].getPath());
+            if (penalty != null) returnValue += penalty.getTransaction().sum();
+        }
+        return returnValue;
+    }
+    
     public UTXO loadUTXO(String path) throws IOException, FileNotFoundException, ClassNotFoundException {
         FileHandler handler = new FileHandler();
         return (UTXO) handler.readObject(path);
+    }
+    
+    public void saveUTXO(Transaction transaction, String address) throws IOException {
+        int index = 0;
+        FileHandler handler = new FileHandler();
+        for (TransactionOutput output : transaction.getOutputs()) {
+            UTXO utxo = new UTXO(output,transaction.getHash(),index,null);
+            if (address.equals(output.address)) {
+                String path = this.getWalletPath(output.address);
+                Files.createDirectories(Paths.get(path + "/utxos/"));
+                handler.writeObject(path + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(index), utxo);
+            }
+            index += 1;
+        }
     }
     
     public void saveUTXO(Transaction transaction) throws IOException {
@@ -242,6 +314,20 @@ public class BlockFiles {
         }
     }
     
+    public void deleteUTXO(Transaction transaction, String address) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
+        FileHandler handler = new FileHandler();
+        for (TransactionInput input : transaction.getInputs()) {
+            UTXO utxo = this.loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
+            if (session.getBlockchain().getPendingUTXOs().contains(utxo.getPreviousHash() + "|" + utxo.getIndex()))
+                session.getBlockchain().getPendingUTXOs().remove(utxo.getPreviousHash() + "|" + utxo.getIndex());
+            if (address.equals(utxo.getAddress())) {
+                String path = this.getWalletPath(utxo.getAddress());
+                File f_wallet = new File(path + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
+                handler.deleteFile(f_wallet.getPath());
+            }
+        }
+    }
+    
     public void deleteUTXO(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         FileHandler handler = new FileHandler();
         for (TransactionInput input : transaction.getInputs()) {
@@ -254,6 +340,29 @@ public class BlockFiles {
                 String path = this.getWalletPath(utxo.getAddress());
                 File f_wallet = new File(path + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
                 handler.deleteFile(f_wallet.getPath());
+            }
+        }
+    }
+    
+    public void saveUTXOLend(Transaction transaction, BorrowContract contract, String address) throws IOException {
+        FileHandler handler = new FileHandler();
+        for (int i = 0; i < transaction.getOutputs().size(); i++) {
+            TransactionOutput output = transaction.getOutputs().get(i);
+            UTXO utxo = new UTXO(output,transaction.getHash(),i,null);
+            if (i == 0 && output.address.equals(contract.getBorrowerAddress())) {   
+                //IF YOU ARE THE BORROWER
+                if (address.equals(output.address)) {
+                    String path = this.getWalletPath(output.address);
+                    Files.createDirectories(Paths.get(path + "/contracts/borrow/lentFunds"));
+                    handler.writeObject(path + "/contracts/borrow/lentFunds/" + utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);
+                    this.lentFundsUpdated = true;
+                }
+            } else {
+                if (address.equals(output.address)) {
+                    String path = this.getWalletPath(output.address);
+                    Files.createDirectories(Paths.get(path + "/utxos/"));
+                    handler.writeObject(path + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);
+                }
             }
         }
     }
@@ -281,6 +390,15 @@ public class BlockFiles {
                     handler.writeObject(path + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);
                 }
             }
+        }
+    }
+    
+    public void saveStakeContract(StakeContract stakeContract, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        FileHandler handler = new FileHandler();
+        if (address.equals(stakeContract.getAddress())) {
+            String path = getWalletPath(stakeContract.getAddress());
+            Files.createDirectories(Paths.get(path + "/contracts/stake"));
+            handler.writeObject(path + "/contracts/stake/contract", stakeContract);
         }
     }
     
@@ -358,6 +476,15 @@ public class BlockFiles {
         return null;
     }
     
+    public void saveLendContract(LendContract lendContract, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        FileHandler handler = new FileHandler();
+        if (address.equals(lendContract.getLenderAddress())) {
+            String path = this.getWalletPath(lendContract.getLenderAddress());
+            Files.createDirectories(Paths.get(path + "/contracts/lendContracts"));
+            handler.writeObject(path + "/contracts/lendContracts/" + lendContract.getHash(), lendContract);
+        }
+    }
+    
     public void saveLendContract(LendContract lendContract) throws IOException, FileNotFoundException, ClassNotFoundException {
         FileHandler handler = new FileHandler();
         Files.createDirectories(Paths.get(session.getPath() + "/contracts/borrow/" + lendContract.getBorrowContractHash() + "/lendContracts"));
@@ -374,6 +501,15 @@ public class BlockFiles {
         }
     }
     
+    public void saveBorrowContract(BorrowContract borrowContract, String address) throws IOException {
+        FileHandler handler = new FileHandler();
+        if (address.equals(borrowContract.getBorrowerAddress())) {
+            String path = this.getWalletPath(borrowContract.getBorrowerAddress());
+            Files.createDirectories(Paths.get(path + "/contracts/borrow"));
+            handler.writeObject(path + "/contracts/borrow/contract", borrowContract);
+        }
+    }
+    
     public void saveBorrowContract(BorrowContract borrowContract) throws IOException {
         Files.createDirectories(Paths.get(session.getPath() + "/contracts/borrow/" + borrowContract.getHash()));
         FileHandler handler = new FileHandler();
@@ -382,6 +518,18 @@ public class BlockFiles {
             String path = this.getWalletPath(borrowContract.getBorrowerAddress());
             Files.createDirectories(Paths.get(path + "/contracts/borrow"));
             handler.writeObject(path + "/contracts/borrow/contract", borrowContract);
+        }
+    }
+    
+    public void savePenalty(Penalty penalty, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        StakeContract contract = this.getStakeContract(penalty.getStakeHash(),address);
+        if (contract == null) return;
+        FileHandler handler = new FileHandler();
+        if (address.equals(contract.getAddress())) {
+            String path = this.getWalletPath(contract.getAddress());
+            Files.createDirectories(Paths.get(path + "/contracts/stake/penalties"));
+            handler.writeObject(path + "/contracts/stake/penalties/" + penalty.getHash(), penalty);
+            this.lentFundsUpdated = true;
         }
     }
     
@@ -440,6 +588,49 @@ public class BlockFiles {
             } catch (Exception e) {}
         }
         this.lentFundsUpdated = false;
+    }
+    
+    public void indexWallet(String address) {
+        session.getBlockchain().getHashIndex().getHashes().forEach(hash -> {
+            try {
+                Block block = getBlock(hash.hash);
+                for (int i = 0; i < block.data.size(); i++) {
+                    try {
+                        Object data = block.data.get(i);
+                        if (i == 0) {
+                            saveUTXO((Transaction) data,address);
+                        } else if (data instanceof Transaction) {
+                            saveUTXO((Transaction) data,address);
+                            deleteUTXO((Transaction) data,address);
+                        } else if (data instanceof BorrowContract) {
+                            saveBorrowContract((BorrowContract) data, address);
+                            saveUTXO(((BorrowContract) data).getValidatorCommission(),address);
+                            deleteUTXO(((BorrowContract) data).getValidatorCommission(),address);
+                        } else if (data instanceof LendContract) {
+                            BorrowContract bcontract = getBorrowContract(((LendContract) data).getBorrowContractHash(),address);
+                            saveUTXOLend(((LendContract) data).getLendTransaction(),bcontract,address);
+                            deleteUTXO(((LendContract) data).getLendTransaction(),address);
+                            saveLendContract((LendContract) data);
+                        } else if (data instanceof StakeContract) {
+                            saveStakeContract((StakeContract) data);
+                            saveUTXO(((StakeContract) data).getValidatorCommission(),address);
+                            deleteUTXO(((StakeContract) data).getValidatorCommission(),address);
+                        } else if (data instanceof Penalty) {
+                            savePenalty((Penalty) data,address);
+                        }
+                        if (this.lentFundsUpdated) {
+                            File f = new File(this.getWalletPath(address));
+                            String name = f.getName();
+                            new Wallet(this.session).loadWallet(name).generateBaseOutputs(String.valueOf(System.currentTimeMillis()));
+                        }
+                    } catch (Exception e) {}
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BlockFiles.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(BlockFiles.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
     
     public Block getBlock(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {

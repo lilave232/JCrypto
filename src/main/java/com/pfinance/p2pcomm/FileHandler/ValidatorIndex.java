@@ -49,6 +49,7 @@ public class ValidatorIndex implements Serializable {
     }
     
     public void addValidator(Validator entry) {
+        if (validators.contains(entry)) return;
         validators.add(entry);
     }
     

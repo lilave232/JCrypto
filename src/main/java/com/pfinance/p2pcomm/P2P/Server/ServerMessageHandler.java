@@ -107,8 +107,7 @@ public class ServerMessageHandler {
                 case Message.BLOCKVALIDATIONVOTE -> {
                     synchronized(this) {
                         if (session.getValidation()) {
-                            System.out.println("Vote Received");
-                            session.getPeer().getBallotBox().setRequired(session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size()/2);
+                            session.getPeer().getBallotBox().setRequired((int)session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size()/2);
                             byte[] object = DatatypeConverter.parseBase64Binary(data.getString("vote"));
                             ByteArrayInputStream in = new ByteArrayInputStream(object);
                             ObjectInputStream is = new ObjectInputStream(in);
@@ -131,8 +130,10 @@ public class ServerMessageHandler {
                             
                             if (session.getBlockFileHandler().getBlock(block.getHash()) != null)
                                 return;
-
+                            
+                            
                             session.getPeer().getBallotBox().addVote(block.getHash(),VoteType.BLOCK, vote);
+                            System.out.println("Vote Received");
                             int checkVote = session.getPeer().getBallotBox().checkVotes(block.getHash(),VoteType.BLOCK);
                             if (checkVote == VoteResult.YES) {System.out.println("Block Confirmed");session.getBlockchain().addBlock(block);}
                             if (checkVote == VoteResult.NO) {

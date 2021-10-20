@@ -28,7 +28,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,15 +60,16 @@ public class Wallet {
         this.session = session;
     }
     
-    public Wallet createWallet(String name, String pwd) {
+    public List<Object> createWallet(String name, String pwd) {
         this.name = name;
+        String mnemonic = null;
         if (Files.exists(Paths.get(session.getPath() + "/wallets/" + this.name))) {
             return null;
         } else {
             try {
                 KeyGenerator generator = new KeyGenerator();
                 String entropy = generator.createEntropy();
-                String mnemonic = generator.generateMnemonic(entropy);
+                mnemonic = generator.generateMnemonic(entropy);
                 System.out.println("Mnemonic is: " + mnemonic);
                 System.out.println("Remember to securely store your mnemonic offline!");
                 this.seed = generator.getMaster(mnemonic);
@@ -77,7 +80,7 @@ public class Wallet {
             }
             
         }
-        return this;
+        return Arrays.asList(this, mnemonic);
     }
     
     public Wallet importWallet(String name, String pwd, String mnemonic) {
@@ -87,6 +90,7 @@ public class Wallet {
             this.seed = generator.getMaster(mnemonic);
             this.address = generator.generate(this.seed).getAddress();
             saveWallet(name, pwd);
+            this.session.getBlockFileHandler().indexWallet(this.address);
         } catch (Exception e) {e.printStackTrace();}
         return this;
     }

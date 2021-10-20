@@ -57,19 +57,19 @@ public class BlockValidation {
                     Long currentTime = System.currentTimeMillis();
                     if (scheduledTime == 0) return false;
                     //if (!(Long.valueOf(block.getTimestamp()) > currentTime - 60000 && Long.valueOf(block.getTimestamp()) < currentTime + 60000)) return false;
-                    if (!((currentTime > scheduledTime && currentTime < scheduledTime + 180000))) return false;
+                    if (!((currentTime >= scheduledTime && currentTime <= scheduledTime + 180000))) return false;
                 }
-                //System.out.println("Validating Header");
+                System.out.println("Validating Header");
                 if (!block.getHash().equals(DigestUtils.sha256Hex(block.getPreviousBlockHash()+block.getStakeContractHash()+block.getTimestamp()+block.hashData())))
                     return false;
-                //System.out.println("Hash Is Equal");
+                System.out.println("Hash Is Equal");
                 if (!block.getPreviousBlockHash().equals(previousBlock)) return false;
-                //System.out.println("Previous Block is Equal");
+                System.out.println("Previous Block is Equal");
                 if (!verifyStakeHash(block.getStakeContractHash())) return false;
-                //System.out.println("Confirmed Stake Hash");
+                System.out.println("Confirmed Stake Hash");
             }
             if (!verifyBase((Transaction) block.data.get(0))) return false;
-            //System.out.println("Confirmed Base Transaction");
+            System.out.println("Confirmed Base Transaction");
             for (Object obj : block.getData().subList(1, block.getData().size())) {
                 if (obj instanceof Transaction){if (!verifyTransaction((Transaction) obj)) return false;}
                 else if (obj instanceof BorrowContract) {if (!verifyBorrowContract((BorrowContract) obj)) return false;}   

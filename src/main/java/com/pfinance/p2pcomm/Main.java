@@ -21,6 +21,7 @@ import com.pfinance.p2pcomm.Voting.SignedVote;
 import com.pfinance.p2pcomm.Voting.VoteResult;
 import com.pfinance.p2pcomm.Voting.VoteType;
 import com.pfinance.p2pcomm.Wallet.Wallet;
+import com.pfinance.p2pcomm.Websocket.WebServer;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,12 +53,21 @@ public class Main {
         // TODO code application logic here
         //Miner miner = new Miner(session);
         //miner.startMiner();
-        try {prompt();} catch (Exception e) {e.printStackTrace();}
+        try {
+            try {
+                WebServer webserver = new WebServer(session);
+                webserver.start();
+            } catch (Exception e) {}
+            prompt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
     }
     
     public static void prompt() {
         try {
+            
             if (session.getPath() == null) {setupActivePath();} 
             else if (session.getWallet() == null) {setupActiveWallet();}
             else {mainMenu();}
@@ -191,7 +201,7 @@ public class Main {
             String name = bufferedReader.readLine();
             System.out.println("Wallet Password?");
             String pwd = bufferedReader.readLine();
-            session.setWallet(new Wallet(session).createWallet(name, pwd));
+            session.setWallet((Wallet) new Wallet(session).createWallet(name, pwd).get(0));
         } else if (response.equals("1")) {
             System.out.println("Wallet Mnemonic?");
             String mnemonic = bufferedReader.readLine();

@@ -1,0 +1,32 @@
+:root {
+	/* COLORS */
+	--white: #e9e9e9;
+	--gray: #333;
+	--blue: #0367a6;
+	--lightblue: #008997;
+
+	/* RADII */
+	--button-radius: 0.7rem;
+
+	/* SIZES */
+	--max-width: 758px;
+	--max-height: 420px;
+
+	font-size: 16px;
+	font-family: Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+body {
+    font-family: "Ubuntu", "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+.btn-outline-light:hover {
+	color: #fff!important;
+    background-color: transparent!important;
+    border-color: #f8f9fa;
+}
+
+a {
+	color: #fff!important;
+}
+
