@@ -52,9 +52,9 @@ public class IndexServlet extends HttpServlet {
             content = ("Balance: " + String.valueOf(this.session.getWallet().getUsableBalance()));
         }
         if (request.getParameter("action").equals("Create Folder")) {
-            response.sendRedirect("http://localhost:8080/createFolder");
+            response.sendRedirect("/createFolder");
         } else if (request.getParameter("action").equals("Load Folder")) {
-            response.sendRedirect("http://localhost:8080/loadFolder");
+            response.sendRedirect("/loadFolder");
         } 
         try {
             request.getRequestDispatcher("/html/index.jsp").forward(request,response);

@@ -46,7 +46,7 @@ public class LoadWalletServlet  extends HttpServlet {
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(CreateFolderServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
-            response.sendRedirect("http://localhost:8080/main");
+            response.sendRedirect("/main");
         }
         
         //request.setAttribute("chainFolders", session.getBlockFileHandler().getBlockchains());

@@ -30,8 +30,8 @@ public class MainServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        if (session.getPath() == null) {response.sendRedirect("http://localhost:8080/");}
-        else if (session.getWallet() == null) {response.sendRedirect("http://localhost:8080/selectWallet");}
+        if (session.getPath() == null) {response.sendRedirect("/");}
+        else if (session.getWallet() == null) {response.sendRedirect("/selectWallet");}
         else {
             request.setAttribute("pathName", session.getPath());
             request.setAttribute("wallet", session.getWallet());

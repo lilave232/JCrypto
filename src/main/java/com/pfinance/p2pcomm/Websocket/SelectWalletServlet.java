@@ -40,11 +40,11 @@ public class SelectWalletServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         if (request.getParameter("action").equals("Create Wallet")) {
-            response.sendRedirect("http://localhost:8080/createWallet");
+            response.sendRedirect("/createWallet");
         } else if (request.getParameter("action").equals("Import Wallet")) {
-            response.sendRedirect("http://localhost:8080/importWallet");
+            response.sendRedirect("/importWallet");
         } else if (request.getParameter("action").equals("Load Wallet")) {
-            response.sendRedirect("http://localhost:8080/loadWallet");
+            response.sendRedirect("/loadWallet");
         }
         try {
             request.getRequestDispatcher("/html/index.jsp").forward(request,response);

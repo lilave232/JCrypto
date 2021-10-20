@@ -46,7 +46,7 @@ public class LoadFolderServlet extends HttpServlet {
                 Logger.getLogger(CreateFolderServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        response.sendRedirect("http://localhost:8080/selectWallet");
+        response.sendRedirect("/selectWallet");
         //request.setAttribute("chainFolders", session.getBlockFileHandler().getBlockchains());
         //request.getRequestDispatcher("/html/loadFolder.jsp").forward(request,response);
     }
