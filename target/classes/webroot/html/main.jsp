@@ -17,37 +17,8 @@
         <body>
             <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
             <div class="d-flex align-items-stretch flex-column vh-100">
-                <nav class="navbar navbar-expand-lg">
-                    <div class="container-fluid">
-                        <a class="navbar-brand" href="#">Navbar</a>
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="#">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Link</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Dropdown
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link disabled">Disabled</a>
-                            </li>
-                            </ul>
-                        </div>
-                    </div>
+                <nav class="navbar navbar-light ps-3">
+                    <span class="navbar-brand mb-0 h1 text-light">JCrpyto</span>
                 </nav>
                 <div class="container-fluid text-center text-secondary h-100 bg-light ps-5 pe-5 pt-3">
                     <a href="/selectWallet" class="text-start text-secondary"><h3 class="fw-normal"><i class="fas fa-arrow-left"></i>Back to Wallets</h3></a>
