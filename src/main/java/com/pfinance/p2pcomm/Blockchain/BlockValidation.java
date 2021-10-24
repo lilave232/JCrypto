@@ -128,7 +128,7 @@ public class BlockValidation {
     
     public boolean verifyNFT(NFT contract) throws ClassNotFoundException, Exception {
         String hash = DigestUtils.sha256Hex(contract.getInceptionDate()+contract.getInitiatorAddress() + DigestUtils.sha256Hex(contract.getData()) + contract.getMintFee().getHash());
-        if (new FileHandler().readObject(session.getPath() + "/contracts/nfts" + hash) != null) return false;
+        if (new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + hash) != null) return false;
         if (!verifyTransaction(contract.getMintFee())) return false;
         if (!Cryptography.verify(contract.getSignature(),hash.getBytes(),contract.getKey())) return false;
         return true;

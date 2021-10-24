@@ -720,7 +720,7 @@ public class BlockFiles {
            handler.writeObject(session.getPath() + "/pending/penalties/" + ((Penalty) obj).getStakeHash() + "/" + ((Penalty) obj).getHash(), obj);
         }
         else if (obj instanceof NFT) {
-           Files.createDirectories(Paths.get(session.getPath() + "/pending/"));
+           if (getPendingObject(((NFT) obj).getHash()) != null) return;
            handler.writeObject(session.getPath() + "/pending/" + ((NFT) obj).getHash(), obj);
         }
     }
