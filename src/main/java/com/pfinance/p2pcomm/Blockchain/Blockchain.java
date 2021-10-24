@@ -177,6 +177,7 @@ public class Blockchain {
         else if (data instanceof LendContract) {addPending(((LendContract) data).getLendTransaction());}
         else if (data instanceof StakeContract) {addPending(((StakeContract) data).getValidatorCommission());}
         else if (data instanceof Penalty) {if (!this.blockValidator.verifyPenaltyPending((Penalty) data)) return;}
+        else if (data instanceof NFT) {addPending(((NFT) data).getMintFee());}
         session.getBlockFileHandler().savePendingObject(data);
     }
     
