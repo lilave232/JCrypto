@@ -32,6 +32,7 @@ public class PeerThread extends Thread {
     private String localHostAddress = null;
     private String hostAddress = null;
     private PrintWriter printWriter;
+    private Socket socket;
     Peer peer;
     
     public PeerThread(Socket socket, Peer peer) throws IOException, Exception {
@@ -41,6 +42,7 @@ public class PeerThread extends Thread {
         this.hostAddress = socket.getInetAddress().getHostName();
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.printWriter = new PrintWriter(socket.getOutputStream(), true);
+        this.socket = socket;
         this.peer = peer;
         sendConnectionMessage();
         sendDownloadMessage();
@@ -65,18 +67,22 @@ public class PeerThread extends Thread {
     }
 
     public void run() {
-        boolean flag = true;
-        while (flag) {
+        while (!this.isInterrupted()) {
             try {
                 this.peer.getHandler().handle(bufferedReader,this);
             } catch (Exception e) {
-                System.out.println("Incoming Connection Closed");
+                System.out.println("Outgoing Connection Closed");
                 this.peer.getPeerThreads().remove(this);
                 e.printStackTrace();
-                flag = false;
                 interrupt();
             }
         }
+    }
+    
+    public void stopThread() throws IOException {
+        this.peer.getPeerThreads().remove(this);
+        this.socket.close();
+        interrupt();
     }
     
     void sendMessage(Integer type, JsonObject data) {

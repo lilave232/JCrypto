@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -52,6 +53,24 @@ public class Peer {
         loadPeerFile();
     }
     
+    public void disconnect() throws IOException {
+        Thread[] threads = new Thread[Thread.currentThread().getThreadGroup().activeCount()];
+        Thread.currentThread().getThreadGroup().enumerate(threads);
+        for (int i = 0; i < threads.length; i++) {
+            if (threads[i] instanceof PeerThread) {
+                ((PeerThread)threads[i]).stopThread();
+                System.out.println("Stopping Peer Thread");
+            }
+            else if (threads[i] instanceof ServerThread) {
+                ((ServerThread)threads[i]).stopThread();
+                System.out.println("Stopping Server Thread");
+            } else if (threads[i] instanceof Server) {
+                ((Server)threads[i]).stopThread();
+                System.out.println("Stopping Server");
+            }
+        }
+    }
+    
     public void addPeerListener() throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("> enter (space separated) hostname:port# peers to receive messages from, s:kip");
@@ -74,7 +93,8 @@ public class Peer {
         try {
             if (!validatePeers(address + ":" + port)) {
                 System.out.println("Connecting to: " + address + ":" + port);
-                socket = new Socket(InetAddress.getByName(address), Integer.valueOf(port));
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(InetAddress.getByName(address),Integer.valueOf(port)), 2000);
                 PeerThread peerThread = new PeerThread(socket, this);
                 peerThread.start();
                 peerThreads.add(peerThread);

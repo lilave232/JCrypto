@@ -26,12 +26,14 @@ public class FileHandler {
     public void writeBytes(String path, byte[] bytes) throws FileNotFoundException, IOException {
         FileOutputStream fos = new FileOutputStream(path,false);
         fos.write(bytes);
+        fos.close();
     }
     
     public void writeObject(String path, Object object) throws IOException {
         FileOutputStream fos = new FileOutputStream(path,false);
         ObjectOutputStream objectOut = new ObjectOutputStream(fos);
         objectOut.writeObject(object);
+        objectOut.close();
     }
     
     public Object readObject(String path) throws FileNotFoundException, IOException, ClassNotFoundException {
@@ -39,7 +41,10 @@ public class FileHandler {
         if(f.exists() && !f.isDirectory()) { 
             FileInputStream fis = new FileInputStream(path);
             ObjectInputStream objectIn = new ObjectInputStream(fis);
-            return objectIn.readObject();
+            Object object = objectIn.readObject();
+            fis.close();
+            objectIn.close();
+            return object;
         }
         return null;
     }
@@ -47,6 +52,7 @@ public class FileHandler {
     public byte[] readBytes(String path) throws FileNotFoundException, IOException {
         FileInputStream fis = new FileInputStream(path);
         byte[] encoded = fis.readAllBytes();
+        fis.close();
         return encoded;
     }
     

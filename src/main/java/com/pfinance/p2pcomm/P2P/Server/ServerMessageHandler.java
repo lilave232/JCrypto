@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package com.pfinance.p2pcomm.P2P.Server;
-
 import com.pfinance.p2pcomm.Blockchain.Block;
 import com.pfinance.p2pcomm.Contracts.StakeContract;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;

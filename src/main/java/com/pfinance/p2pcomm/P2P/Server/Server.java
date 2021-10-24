@@ -44,7 +44,7 @@ public class Server extends Thread {
     @Override
     public void run() {
         try {
-            while(true) {
+            while(!this.isInterrupted()) {
                 ServerThread serverThread = new ServerThread(serverSocket.accept(),this);
                 serverThreads.add(serverThread);
                 serverThread.start();
@@ -57,6 +57,13 @@ public class Server extends Thread {
         } catch (Exception e) {}
     }
     
+    public void stopThread() throws IOException {
+        this.serverSocket.close();
+        serverThreads.clear();
+        interrupt();
+    }
+    
+    public ServerSocket getServerSocket() {return this.serverSocket;}
     public Set<ServerThread> getServerThreads() {return serverThreads;}
     public Peer getPeer() {return this.peer;}
     public ServerMessageHandler getHandler() {return this.handler;}

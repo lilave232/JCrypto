@@ -1,25 +1,11 @@
-<html>
-    <head>
-        <title>Stripe Gradient</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-        <link rel="stylesheet" href="static/css/background.css">
-        <link rel="stylesheet" href="static/css/main.css">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    </head>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ include file="parts/header.jsp" %> 
     <body>
         <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
         <body>
             <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
             <div class="d-flex align-items-stretch flex-column vh-100">
-                <nav class="navbar navbar-light ps-3">
-                    <span class="navbar-brand mb-0 h1 text-light">JCrpyto</span>
-                </nav>
+                <%@ include file="parts/navbar_1.jsp" %> 
                 <div class="container-fluid text-center text-secondary h-100 bg-light ps-5 pe-5 pt-3">
                     <a href="/selectWallet" class="text-start text-secondary"><h3 class="fw-normal"><i class="fas fa-arrow-left"></i>Back to Wallets</h3></a>
                     <h2 class="text-start fw-normal">${wallet.getName()} | ${wallet.getUsableBalance()} JCR</h2>
@@ -41,6 +27,30 @@
                         <h3 class="text-start fw-light">Penalties Incurred: ${wallet.getPenaltyBalance()} JCR</h3>
                         <h3 class="text-start fw-light">Net Borrowed: ${wallet.getBorrowedBalance() - wallet.getPenaltyBalance()} JCR</h3>
                         <h3 class="text-start fw-light">Lent Balance: ${wallet.getLentBalance()} JCR</h3>
+                        <h3 class="text-start fw-light">Previous Transactions</h3>
+                        <div class="container-fluid border rounded pt-3 pb-3">
+                            <div class="row">
+                                <div class="col-1 border-end text-center"><p class="fw-light text-secondary">Sent/Received</p></div>
+                                <div class="col-2 border-end text-center"><p class="fw-light text-secondary">Date</p></div>
+                                <div class="col-7 border-end text-center"><p class="fw-light text-secondary">Transaction ID</p></div>
+                                <div class="col-2 border-end text-center"><p class="fw-light text-secondary">Amount</p></div>
+                            </div>
+                            <c:forEach items="${transactions}" var="transaction">
+                                <div class="row">
+                                    <c:choose> 
+                                        <c:when test="${transaction.getType() == 0}">
+                                            <div class="col-1 border-end text-center"><h4 class="fw-light text-success"><i class="fas fa-sign-in-alt"></i></h4></div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="col-1 border-end text-center"><h4 class="fw-light text-danger"><i class="fas fa-sign-out-alt"></i></h4></div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="col-2 border-end text-center"><p class="fw-light text-secondary">${transaction.getDateToString()}</p></div>
+                                    <div class="col-7 border-end text-center"><p class="fw-light text-secondary text-truncate">${transaction.getHash()}</p></div>
+                                    <div class="col-2 text-center"><p class="fw-light text-secondary">${transaction.getAmount()} JCR</p></div>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
                     <div class="tab-pane fade text-start rounded-bottom bg-white border-start border-end border-bottom p-3" id="send" role="tabpanel" aria-labelledby="send-tab">
                         <form action="/sendTxn" method="POST">
@@ -51,6 +61,10 @@
                             <div class="d-flex align-items-center">
                                 <label for="amount">Amount: </label>
                                 <input class="btn m-2 fs-6 text-start border-secondary flex-fill" placeholder="Amount" id="amount" type="number" step="any" name="amount" required>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <label for="fee">Fee: </label>
+                                <input class="btn m-2 fs-6 text-start border-secondary flex-fill" placeholder="Fee" id="fee" type="number" step="any" name="fee" required>
                             </div>
                             <div class="d-flex align-items-center">
                                 <label for="pword">Wallet Password: </label>
@@ -88,6 +102,4 @@
             </div>
         </body>
     </body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-    <script src="static/js/main.js"></script>
-</html>
+<%@ include file="parts/footer.jsp" %> 

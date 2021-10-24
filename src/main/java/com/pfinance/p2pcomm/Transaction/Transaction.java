@@ -19,7 +19,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class Transaction implements Serializable {
     private static final long serialVersionUID = 3084956333598879728L;
     private ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
-    private ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
+    ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
     private String timestamp = null;
     private String hash = null;
     
@@ -50,6 +50,7 @@ public class Transaction implements Serializable {
         }
         return sumValue;
     }
+
     
     public String getHash() {return this.hash;}
     public ArrayList<TransactionInput> getInputs() {return this.inputs;}

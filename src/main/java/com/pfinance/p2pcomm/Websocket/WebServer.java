@@ -6,6 +6,8 @@
 package com.pfinance.p2pcomm.Websocket;
 
 import com.pfinance.p2pcomm.Session;
+import jakarta.servlet.MultipartConfigElement;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,8 +70,8 @@ public class WebServer extends Thread {
             // Create Servlet context
             ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
-            servletContextHandler.setResourceBase(baseUri.toASCIIString());
-            //servletContextHandler.setResourceBase("NetBeansProjects/P2PComm/target/classes/webroot");
+            //servletContextHandler.setResourceBase(baseUri.toASCIIString());
+            servletContextHandler.setResourceBase(System.getProperty("user.dir") + "/src/main/resources/webroot/");
 
             // Since this is a ServletContextHandler we must manually configure JSP support.
             this.enableEmbeddedJspSupport(servletContextHandler);
@@ -114,10 +116,19 @@ public class WebServer extends Thread {
             servletHolder = new ServletHolder(sendTxn);
             servletContextHandler.addServlet(servletHolder, "/sendTxn");
             
+            PeerServlet peerServlet = new PeerServlet(this.session);
+            servletHolder = new ServletHolder(peerServlet);
+            servletContextHandler.addServlet(servletHolder, "/peer");
+            
+            NFTServlet nftServlet = new NFTServlet(this.session);
+            servletHolder = new ServletHolder(nftServlet);
+            servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(System.getProperty("user.dir") + "/tmp"));
+            servletContextHandler.addServlet(servletHolder, "/nft");
+            
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
-            holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");
-            //holderDefault.setInitParameter("resourceBase", "NetBeansProjects/P2PComm/target/classes/webroot" + "static/");
+            //holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");
+            holderDefault.setInitParameter("resourceBase", System.getProperty("user.dir") + "/src/main/resources/webroot/static");
             holderDefault.setInitParameter("dirAllowed", "true");
             servletContextHandler.addServlet(new ServletHolder(new DefaultServlet()), "/static/*");
             server.setHandler(servletContextHandler);
@@ -131,6 +142,12 @@ public class WebServer extends Thread {
             // Start Server
             // server.setDumpAfterStart(true);
             server.start();
+            if(Desktop.isDesktopSupported()) {
+                String s = "http://localhost:8080";
+                Desktop desktop = Desktop.getDesktop();
+                desktop.browse(URI.create(s));
+            }
+            
         
         } catch (Exception ex) {
             Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);

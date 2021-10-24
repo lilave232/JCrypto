@@ -62,7 +62,6 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
     }
     
     public static void prompt() {
@@ -121,14 +120,18 @@ public class Main {
             String address = bufferedReader.readLine();
             System.out.println("Amount to Send?");
             float value = Float.valueOf(bufferedReader.readLine());
+            System.out.println("Fee Amount?");
+            float fee = Float.valueOf(bufferedReader.readLine());
             TransactionOutput output = new TransactionOutput(address,value);
-            Transaction txn = activeWallet.createTransaction(output.toList());
+            Transaction txn = activeWallet.createTransaction(output.toList(),fee);
             String object = DatatypeConverter.printBase64Binary(txn.toBytes());
             JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);
         }
         else if (response.equals("10") && session.getPeer() != null && activeWallet.getBorrowContract() == null) {
-            BorrowContract contract = activeWallet.createBorrowContract();
+            System.out.println("Fee Amount?");
+            float fee = Float.valueOf(bufferedReader.readLine());
+            BorrowContract contract = activeWallet.createBorrowContract(fee);
             String object = DatatypeConverter.printBase64Binary(contract.toBytes());
             JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);
@@ -146,13 +149,17 @@ public class Main {
             Integer selection = Integer.valueOf(bufferedReader.readLine());
             System.out.println("Amount To Lend?");
             float value = Float.valueOf(bufferedReader.readLine());
-            LendContract lcontract = activeWallet.createLendContract(session.getBlockFileHandler().getBorrowContract(contracts[selection]), value);
+            System.out.println("Fee Amount?");
+            float fee = Float.valueOf(bufferedReader.readLine());
+            LendContract lcontract = activeWallet.createLendContract(session.getBlockFileHandler().getBorrowContract(contracts[selection]), value, fee);
             String object = DatatypeConverter.printBase64Binary(lcontract.toBytes());
             JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);
         }
         else if (response.equals("12") && session.getPeer() != null && activeWallet.getBorrowContract() != null && activeWallet.getStakeContract() == null) {
-            StakeContract contract = activeWallet.createStakeContract();
+            System.out.println("Fee Amount?");
+            float fee = Float.valueOf(bufferedReader.readLine());
+            StakeContract contract = activeWallet.createStakeContract(fee);
             String object = DatatypeConverter.printBase64Binary(contract.toBytes());
             JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);
@@ -161,6 +168,7 @@ public class Main {
         else if (response.equals("15")) {System.out.println(session.getValidators());}
         else if (response.equals("16")) {System.out.println(session.getBlockchain().block);}
         else if (response.equals("17")) {System.out.println(session.getScheduler());}
+        else if (response.equals("18")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
         else if (response.equals("e")) {System.exit(0);}
     }
     

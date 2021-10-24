@@ -18,6 +18,7 @@ import com.pfinance.p2pcomm.Miner.Miner;
 import com.pfinance.p2pcomm.Miner.Scheduler;
 import com.pfinance.p2pcomm.P2P.Peer.Peer;
 import com.pfinance.p2pcomm.P2P.Server.ServerMessageHandler;
+import com.pfinance.p2pcomm.Statistics.Statistics;
 import com.pfinance.p2pcomm.Transaction.UTXO;
 import com.pfinance.p2pcomm.Wallet.Wallet;
 import java.io.BufferedReader;
@@ -48,6 +49,7 @@ public class Session {
     private BlockFiles blockFileHandler = new BlockFiles(this);
     private BlockValidation blockValidator = new BlockValidation(this);
     private Blockchain blockchain = new Blockchain(this);
+    private Statistics statistics = new Statistics(this);
     private Peer peer = null;
     private String path = null;
     private ValidatorIndex validators = new ValidatorIndex();
@@ -90,7 +92,20 @@ public class Session {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         String port = bufferedReader.readLine().toLowerCase();
         peer.connect(port);
-        
+    }
+    
+    public void connectPeer(String port) throws UnknownHostException, Exception {
+        peer = new Peer(this);
+        peer.connect(port);
+    }
+    
+    public void disconnectPeer() {
+        try {
+            peer.disconnect();
+            peer = null;
+        } catch (IOException ex) {
+            Logger.getLogger(Session.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public ArrayList<Wallet> getWallets() {
@@ -106,6 +121,7 @@ public class Session {
         return returnArray;
     }
     
+    public Statistics getStats() {return this.statistics;}
     public Wallet getWallet() {return this.activeWallet;}
     public Peer getPeer() {return this.peer;}
     public Blockchain getBlockchain() {return this.blockchain;}

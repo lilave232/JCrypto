@@ -33,8 +33,16 @@ public class MainServlet extends HttpServlet {
         if (session.getPath() == null) {response.sendRedirect("/");}
         else if (session.getWallet() == null) {response.sendRedirect("/selectWallet");}
         else {
+            try {
+                if (session.getPeer() == null) {
+                    session.connectPeer("7777");
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(MainServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
             request.setAttribute("pathName", session.getPath());
             request.setAttribute("wallet", session.getWallet());
+            request.setAttribute("transactions", session.getStats().getWalletInOuts());
             try {
                 request.getRequestDispatcher("/html/main.jsp").forward(request,response);
             } catch (IllegalStateException ex) {}

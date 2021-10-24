@@ -30,6 +30,7 @@ public class SelectWalletServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        if (session.getPath() == null) {response.sendRedirect("/");}
         try {
             request.setAttribute("wallets", session.getWallets().toArray());
             request.getRequestDispatcher("/html/selectWallet.jsp").forward(request,response);

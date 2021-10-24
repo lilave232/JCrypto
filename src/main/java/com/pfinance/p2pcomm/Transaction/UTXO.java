@@ -23,14 +23,18 @@ import java.security.Signature;
  */
 public class UTXO implements Serializable {
     private TransactionOutput output = null;
+    private String timestamp = null;
+    private String timestamp_out = null;
     private String hash;
+    private String hash_out = null;
     private Integer index = null;
     private Boolean lent = false;
     private Boolean lentReturn = false;
     private Boolean borrowed = false;
     private BorrowContract borrowContract = null;
     
-    public UTXO(TransactionOutput output, String hash, Integer index, Key key) {
+    public UTXO(TransactionOutput output, String timestamp, String hash, Integer index, Key key) {
+        this.timestamp = timestamp;
         this.output = output;
         this.hash = hash;
         this.index = index;
@@ -46,6 +50,13 @@ public class UTXO implements Serializable {
         }
     }
     
+    public void setOut(String timestampOut, String hashOut) {
+        this.timestamp_out = timestampOut;
+        this.hash_out = hashOut;
+    }
+    
+    public String getTimestampIn() {return this.timestamp;}
+    public String getTimestampOut() {return this.timestamp_out;}
     public void setLent(Boolean state) {this.lent = state;}
     public void setLentReturn(Boolean state) {this.lentReturn = state;}
     public void setBorrowed(Boolean state, BorrowContract contract) {this.borrowed = state; this.borrowContract=contract;}
@@ -54,6 +65,7 @@ public class UTXO implements Serializable {
     public Boolean getBorrowed() {return this.borrowed;}
     public BorrowContract getBorrowedContract() {return this.borrowContract;}
     public String getPreviousHash() {return this.hash;}
+    public String getHashOut() {return this.hash_out;}
     public Integer getIndex() {return this.index;}
     public String getAddress() {return this.output.address;}
     public float toFloat() {return this.output.value;}
@@ -63,12 +75,13 @@ public class UTXO implements Serializable {
         StringBuffer returnString = new StringBuffer();
         returnString.append(String.format("|%-131s|\n", "").replace(' ', '-'));
         returnString.append(String.format("|%-131s|\n", "UTXO").replace(' ', '-'));
-        returnString.append(String.format("|%-131s|\n", "Previous Txn: " + this.hash));
+        returnString.append(String.format("|%-131s|\n", "Transaction Timestamp In: " + this.timestamp));
+        returnString.append(String.format("|%-131s|\n", "Transaction In: " + this.hash));
+        returnString.append(String.format("|%-131s|\n", "Transaction Timestamp Out: " + this.timestamp_out));
+        returnString.append(String.format("|%-131s|\n", "Transaction Out: " + this.hash_out));
         returnString.append(String.format("|%-131s|\n", "Index: " + this.index));
         returnString.append(String.format("|%-131s|\n", "Address: " + this.output.address));
         returnString.append(String.format("|%-131s|\n", "Value: " + this.output.value));
-        returnString.append(String.format("|%-131s|\n", "Lent: " + this.lent));
-        returnString.append(String.format("|%-131s|\n", "Lent Return: " + this.lentReturn));
         returnString.append(String.format("|%-131s|\n", "").replace(' ', '-'));
         return returnString.toString();
     }

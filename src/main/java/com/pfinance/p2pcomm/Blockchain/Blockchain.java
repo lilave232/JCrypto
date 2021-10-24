@@ -60,7 +60,7 @@ public class Blockchain {
             //Genesis Block 1
             if (this.index.getHashes().size() < 1) {
                 newBlock("0000000000000000",key);
-                BorrowContract bcontract = wallet.createBorrowContract();
+                BorrowContract bcontract = wallet.createBorrowContract(0);
                 addData(bcontract);
                 addBlock(this.block);
             }
@@ -68,7 +68,7 @@ public class Blockchain {
             if (this.index.getHashes().size() < 2) {
                 newBlock("0000000000000000",key);
                 wallet.loadBorrowContract();
-                LendContract lcontract = wallet.createLendContract(wallet.getBorrowContract(), 10);
+                LendContract lcontract = wallet.createLendContract(wallet.getBorrowContract(), 10,0);
                 addData(lcontract);
                 addBlock(this.block);
             }
@@ -76,7 +76,7 @@ public class Blockchain {
             if (this.index.getHashes().size() < 3) {
                 newBlock("0000000000000000",key);
                 wallet.loadBorrowContract();
-                StakeContract scontract = wallet.createStakeContract();
+                StakeContract scontract = wallet.createStakeContract(0);
                 addData(scontract);
                 addBlock(this.block);
             }
@@ -131,17 +131,37 @@ public class Blockchain {
     
     public boolean verifyTransaction(Object object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         if (object instanceof Transaction) {
-            if (this.blockValidator.verifyTransaction((Transaction) object)) {block.addData(object); return true;}
+            if (this.blockValidator.verifyTransaction((Transaction) object)) {block.addData(object, getFee((Transaction) object)); return true;}
         } else if (object instanceof BorrowContract) {
-            if (this.blockValidator.verifyBorrowContract((BorrowContract) object)) {block.addData(object); return true;}
+            if (this.blockValidator.verifyBorrowContract((BorrowContract) object)) {block.addData(object, getFee(((BorrowContract) object).getValidatorCommission())); return true;}
         } else if (object instanceof LendContract) {
-            if (this.blockValidator.verifyLendContract((LendContract) object)) {block.addData(object); return true;}
+            if (this.blockValidator.verifyLendContract((LendContract) object)) {block.addData(object, getFee(((LendContract) object).getLendTransaction())); return true;}
         } else if (object instanceof StakeContract) {
-            if (this.blockValidator.verifyStakeContract((StakeContract) object)) {block.addData(object); return true;}
+            if (this.blockValidator.verifyStakeContract((StakeContract) object)) {block.addData(object, getFee(((StakeContract) object).getValidatorCommission())); return true;}
         } else if (object instanceof Penalty) {
-            if (this.blockValidator.verifyPenalty((Penalty) object)){block.addData(object);return true;}
+            if (this.blockValidator.verifyPenalty((Penalty) object)){block.addData(object, 0);return true;}
+        } else if (object instanceof NFT) {
+            if (this.blockValidator.verifyNFT((NFT) object)){block.addData(object,getFee(((NFT) object).getMintFee()));return true;}
         }
         return false;
+    }
+    
+    public float getFee(Transaction transaction) throws IOException, ClassNotFoundException {
+        float inputSum = sumInputs(transaction.getInputs());
+        float fee = inputSum - transaction.sum();
+        return fee;
+    }
+    
+    public float sumInputs(ArrayList<TransactionInput> inputs) throws IOException, ClassNotFoundException, FileNotFoundException {
+        float inputSum = 0;
+        for (TransactionInput input : inputs) {
+            UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
+            if (utxo == null) return 0;
+            if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
+            if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
+            inputSum += utxo.toFloat();
+        }
+        return inputSum;
     }
     
     public boolean addData(Object object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import org.apache.commons.codec.digest.DigestUtils;
 import com.pfinance.p2pcomm.Transaction.*;
 import com.pfinance.p2pcomm.Contracts.*;
+import com.pfinance.p2pcomm.Cryptography.Cryptography;
 
 /**
  *
@@ -42,12 +43,21 @@ public class Block implements Serializable {
         if (baseOutput.isEmpty()) {baseOutput.add(new TransactionOutput(address,(float)reward));}
         for (TransactionOutput output : baseOutput) {baseTransaction.addOutput(output);}
         baseTransaction.addInput(baseInput);
-        addData(baseTransaction);
+        addData(baseTransaction,0);
     }
     
-    public void addData(Object entry) {
+    public void addData(Object entry, float fee) {
         this.data.add(entry);
+        updateReward(fee);
         this.hash = hashBlock();
+    }
+    
+    public void updateReward(float fee) {
+        Transaction original = (Transaction) this.data.get(0);
+        float value = original.sum();
+        for (TransactionOutput output : original.getOutputs()) {
+            output.value += fee * ((output.value) / value);
+        }
     }
     
     public String hashBlock() {

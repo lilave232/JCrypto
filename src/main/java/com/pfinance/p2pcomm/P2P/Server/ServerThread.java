@@ -34,15 +34,21 @@ public class ServerThread extends Thread {
     
     public void run() {
         try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            bufferedReader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
             this.printWriter = new PrintWriter(socket.getOutputStream(), true);
-            while(true) {this.server.getHandler().handle(bufferedReader,this);}
+            while(!this.isInterrupted()) {this.server.getHandler().handle(bufferedReader,this);}
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Outgoing Connection Closed");
+            System.out.println("Incoming Connection Closed");
             server.getServerThreads().remove(this);
             interrupt();
         }
+    }
+    
+    public void stopThread() throws IOException {
+        this.socket.close();
+        server.getServerThreads().remove(this);
+        interrupt();
     }
     
     public void sendMessage(Integer type, JsonObject data) {
@@ -58,6 +64,7 @@ public class ServerThread extends Thread {
         } catch (Exception e) {}
     }
     
+    public Socket getSocket() {return this.socket;}
     public Server getServer() {return this.server;}
     public PrintWriter getPrintWriter() {return printWriter;}
     @Override public String toString() {return socket.getInetAddress().getHostName() + ":" + socket.getPort();}

@@ -35,6 +35,7 @@ public class BlockValidation {
     boolean validateHeader = false;
     Session session = null;
     ArrayList<String> blockUtxosUsed = new ArrayList<>();
+    float reward = 0;
             
     public BlockValidation(Session session) {
         this.session = session;
@@ -48,6 +49,7 @@ public class BlockValidation {
     
     public boolean validate(Block block, String previousBlock) {
         blockUtxosUsed = new ArrayList<String>();
+        reward = 0;
         try {
             if (validateHeader) {
                 if (session.getPeer().getHandler().isRequested(block.getHash())) {}
@@ -68,8 +70,6 @@ public class BlockValidation {
                 if (!verifyStakeHash(block.getStakeContractHash())) return false;
                 System.out.println("Confirmed Stake Hash");
             }
-            if (!verifyBase((Transaction) block.data.get(0))) return false;
-            System.out.println("Confirmed Base Transaction");
             for (Object obj : block.getData().subList(1, block.getData().size())) {
                 if (obj instanceof Transaction){if (!verifyTransaction((Transaction) obj)) return false;}
                 else if (obj instanceof BorrowContract) {if (!verifyBorrowContract((BorrowContract) obj)) return false;}   
@@ -79,8 +79,12 @@ public class BlockValidation {
                     if (session.getPeer().getHandler().isRequested(block.getHash())){ if (!verifyPenaltyPending((Penalty) (obj))) return false;}
                     else {if (!verifyPenalty((Penalty)(obj))) return false;}
                 }
+                else if (obj instanceof NFT) {if (!verifyNFT((NFT) obj)) return false;}
                 else {return false;}
             }
+            System.out.println("Confirmed Transactions");
+            if (!verifyBase((Transaction) block.data.get(0))) return false;
+            System.out.println("Confimed Base Transaction");
             return true;
         } catch (Exception e){e.printStackTrace();return false;}
     }
@@ -93,7 +97,7 @@ public class BlockValidation {
     
     public boolean verifyBase(Transaction transaction) {
         try {
-            float reward = getReward(transaction.getTimestamp());
+            reward += getReward(transaction.getTimestamp());
             if (!transaction.getInputs().get(0).previousTxnHash.equals(DigestUtils.sha256Hex("Base"))
                 || !transaction.getInputs().get(0).outputIndex.equals(0)
                 || Float.compare(transaction.sum(), reward) != 0) {return false;}
@@ -112,12 +116,20 @@ public class BlockValidation {
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum += utxo.toFloat();
         }
-        if (Float.compare(inputSum, transaction.sum()) != 0) return false;
+        reward += inputSum - transaction.sum();
+        //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
             blockUtxosUsed.add(utxo.getPreviousHash() + "|" + utxo.getIndex());
         }
+        return true;
+    }
+    
+    public boolean verifyNFT(NFT contract) throws ClassNotFoundException, Exception {
+        String hash = DigestUtils.sha256Hex(contract.getInceptionDate()+contract.getInitiatorAddress() + DigestUtils.sha256Hex(contract.getData()) + contract.getMintFee().getHash());
+        if (!verifyTransaction(contract.getMintFee())) return false;
+        if (!Cryptography.verify(contract.getSignature(),hash.getBytes(),contract.getKey())) return false;
         return true;
     }
     

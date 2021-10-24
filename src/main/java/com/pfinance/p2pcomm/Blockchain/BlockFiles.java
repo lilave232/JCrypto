@@ -7,6 +7,7 @@ package com.pfinance.p2pcomm.Blockchain;
 
 import com.pfinance.p2pcomm.Contracts.BorrowContract;
 import com.pfinance.p2pcomm.Contracts.LendContract;
+import com.pfinance.p2pcomm.Contracts.NFT;
 import com.pfinance.p2pcomm.Contracts.StakeContract;
 import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.FileHandler.Validator;
@@ -288,7 +289,7 @@ public class BlockFiles {
         int index = 0;
         FileHandler handler = new FileHandler();
         for (TransactionOutput output : transaction.getOutputs()) {
-            UTXO utxo = new UTXO(output,transaction.getHash(),index,null);
+            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),index,null);
             if (address.equals(output.address)) {
                 String path = this.getWalletPath(output.address);
                 Files.createDirectories(Paths.get(path + "/utxos/"));
@@ -303,7 +304,7 @@ public class BlockFiles {
         int index = 0;
         FileHandler handler = new FileHandler();
         for (TransactionOutput output : transaction.getOutputs()) {
-            UTXO utxo = new UTXO(output,transaction.getHash(),index,null);
+            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),index,null);
             handler.writeObject(session.getPath() + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(index), utxo);
             if (this.walletAddresses.contains(output.address)) {
                 String path = this.getWalletPath(output.address);
@@ -317,13 +318,16 @@ public class BlockFiles {
     public void deleteUTXO(Transaction transaction, String address) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         FileHandler handler = new FileHandler();
         for (TransactionInput input : transaction.getInputs()) {
-            UTXO utxo = this.loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
+            String path = this.getWalletPath(address);
+            UTXO utxo = this.loadUTXO(path + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (session.getBlockchain().getPendingUTXOs().contains(utxo.getPreviousHash() + "|" + utxo.getIndex()))
                 session.getBlockchain().getPendingUTXOs().remove(utxo.getPreviousHash() + "|" + utxo.getIndex());
             if (address.equals(utxo.getAddress())) {
-                String path = this.getWalletPath(utxo.getAddress());
+                Files.createDirectories(Paths.get(path + "/used_utxos/"));
                 File f_wallet = new File(path + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
                 handler.deleteFile(f_wallet.getPath());
+                utxo.setOut(transaction.getTimestamp(), transaction.getHash());
+                handler.writeObject(path + "/used_utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex), utxo);
             }
         }
     }
@@ -338,8 +342,11 @@ public class BlockFiles {
             handler.deleteFile(f.getPath());
             if (this.walletAddresses.contains(utxo.getAddress())) {
                 String path = this.getWalletPath(utxo.getAddress());
+                Files.createDirectories(Paths.get(path + "/used_utxos/"));
                 File f_wallet = new File(path + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
                 handler.deleteFile(f_wallet.getPath());
+                utxo.setOut(transaction.getTimestamp(), transaction.getHash());
+                handler.writeObject(path + "/used_utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex), utxo);
             }
         }
     }
@@ -348,7 +355,7 @@ public class BlockFiles {
         FileHandler handler = new FileHandler();
         for (int i = 0; i < transaction.getOutputs().size(); i++) {
             TransactionOutput output = transaction.getOutputs().get(i);
-            UTXO utxo = new UTXO(output,transaction.getHash(),i,null);
+            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),i,null);
             if (i == 0 && output.address.equals(contract.getBorrowerAddress())) {   
                 //IF YOU ARE THE BORROWER
                 if (address.equals(output.address)) {
@@ -371,7 +378,7 @@ public class BlockFiles {
         FileHandler handler = new FileHandler();
         for (int i = 0; i < transaction.getOutputs().size(); i++) {
             TransactionOutput output = transaction.getOutputs().get(i);
-            UTXO utxo = new UTXO(output,transaction.getHash(),i,null);
+            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),i,null);
             if (i == 0 && output.address.equals(contract.getBorrowerAddress())) {
                 Files.createDirectories(Paths.get(session.getPath() + "/contracts/borrow/" + contract.getHash() + "/lentFunds"));
                 handler.writeObject(session.getPath() + "/contracts/borrow/" + contract.getHash() + "/lentFunds/" +  utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);   
@@ -460,6 +467,37 @@ public class BlockFiles {
         return returnArray;
     }
     
+    public ArrayList<NFT> getWalletNFTs(String address) throws IOException {
+        ArrayList<NFT> returnArray = new ArrayList<>();
+        String path = getWalletPath(address);
+        File f = new File(path + "/contracts/nfts");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files != null) {
+            for (File file : files) {
+                NFT nft = loadNFT(file.getPath());
+                if (nft != null) {
+                    returnArray.add(nft);
+                }
+                
+            }
+        }
+        returnArray.sort((o1, o2) -> o1.getInceptionDate().compareTo(o2.getInceptionDate()));
+        return returnArray;
+    }
+    
+    public NFT loadNFT(String path) {
+        try {
+            FileHandler handler = new FileHandler();
+            return (NFT) handler.readObject(path);
+        } catch (Exception e) {} 
+        return null;
+    }
+    
     public Penalty loadPenalty(String path) {
         try {
             FileHandler handler = new FileHandler();
@@ -518,6 +556,17 @@ public class BlockFiles {
             String path = this.getWalletPath(borrowContract.getBorrowerAddress());
             Files.createDirectories(Paths.get(path + "/contracts/borrow"));
             handler.writeObject(path + "/contracts/borrow/contract", borrowContract);
+        }
+    }
+    
+    public void saveNFT(NFT object) throws IOException {
+        Files.createDirectories(Paths.get(session.getPath() + "/contracts/nfts/"));
+        FileHandler handler = new FileHandler();
+        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getHash(), object);
+        if (this.getWalletAddresses().contains(object.getInitiatorAddress())) {
+            String path = this.getWalletPath(object.getInitiatorAddress());
+            Files.createDirectories(Paths.get(path + "/contracts/nfts"));
+            handler.writeObject(path + "/contracts/nfts/" + object.getHash(), object);
         }
     }
     
@@ -580,6 +629,10 @@ public class BlockFiles {
                     deleteUTXO(((StakeContract) data).getValidatorCommission());
                 } else if (data instanceof Penalty) {
                     savePenalty((Penalty) data);
+                } else if (data instanceof NFT) {
+                    saveNFT((NFT) data);
+                    saveUTXO(((NFT) data).getMintFee());
+                    deleteUTXO(((NFT) data).getMintFee());
                 }
                 deletePendingObject(data);
                 if (this.lentFundsUpdated) {
@@ -595,35 +648,40 @@ public class BlockFiles {
             try {
                 Block block = getBlock(hash.hash);
                 for (int i = 0; i < block.data.size(); i++) {
-                    try {
-                        Object data = block.data.get(i);
-                        if (i == 0) {
-                            saveUTXO((Transaction) data,address);
-                        } else if (data instanceof Transaction) {
-                            saveUTXO((Transaction) data,address);
-                            deleteUTXO((Transaction) data,address);
-                        } else if (data instanceof BorrowContract) {
-                            saveBorrowContract((BorrowContract) data, address);
-                            saveUTXO(((BorrowContract) data).getValidatorCommission(),address);
-                            deleteUTXO(((BorrowContract) data).getValidatorCommission(),address);
-                        } else if (data instanceof LendContract) {
+                    Object data = block.data.get(i);
+                    if (i == 0) {
+                        try { saveUTXO((Transaction) data,address);} catch (Exception e) {}
+                    } else if (data instanceof Transaction) {
+                        try { saveUTXO((Transaction) data,address); } catch (Exception e) {}
+                        try { deleteUTXO((Transaction) data,address); } catch (Exception e) {}
+                    } else if (data instanceof BorrowContract) {
+                        try { saveBorrowContract((BorrowContract) data, address);} catch (Exception e) {}
+                        try { saveUTXO(((BorrowContract) data).getValidatorCommission(),address);} catch (Exception e) {}
+                        try { deleteUTXO(((BorrowContract) data).getValidatorCommission(),address);} catch (Exception e) {}
+                    } else if (data instanceof LendContract) {
+                        try { 
                             BorrowContract bcontract = getBorrowContract(((LendContract) data).getBorrowContractHash(),address);
                             saveUTXOLend(((LendContract) data).getLendTransaction(),bcontract,address);
-                            deleteUTXO(((LendContract) data).getLendTransaction(),address);
-                            saveLendContract((LendContract) data);
-                        } else if (data instanceof StakeContract) {
-                            saveStakeContract((StakeContract) data);
-                            saveUTXO(((StakeContract) data).getValidatorCommission(),address);
-                            deleteUTXO(((StakeContract) data).getValidatorCommission(),address);
-                        } else if (data instanceof Penalty) {
-                            savePenalty((Penalty) data,address);
-                        }
-                        if (this.lentFundsUpdated) {
-                            File f = new File(this.getWalletPath(address));
-                            String name = f.getName();
-                            new Wallet(this.session).loadWallet(name).generateBaseOutputs(String.valueOf(System.currentTimeMillis()));
-                        }
-                    } catch (Exception e) {}
+                        } catch (Exception e) {}
+                        try { deleteUTXO(((LendContract) data).getLendTransaction(),address);} catch (Exception e) {}
+                        try { saveLendContract((LendContract) data);} catch (Exception e) {}
+                    } else if (data instanceof StakeContract) {
+                        try { saveStakeContract((StakeContract) data);} catch (Exception e) {}
+                        try { saveUTXO(((StakeContract) data).getValidatorCommission(),address);} catch (Exception e) {}
+                        try { deleteUTXO(((StakeContract) data).getValidatorCommission(),address);} catch (Exception e) {}
+                    } else if (data instanceof Penalty) {
+                        try { savePenalty((Penalty) data,address);} catch (Exception e) {}
+                    } else if (data instanceof NFT) {
+                        try { saveNFT((NFT) data);} catch (Exception e) {}
+                        try { saveUTXO(((NFT) data).getMintFee(),address);} catch (Exception e) {}
+                        try { deleteUTXO(((NFT) data).getMintFee(),address);} catch (Exception e) {}
+                    }
+                    if (this.lentFundsUpdated) {
+                        if (this.getWalletPath(address) == null) return;
+                        File f = new File(this.getWalletPath(address));
+                        String name = f.getName();
+                        new Wallet(this.session).loadWallet(name).generateBaseOutputs(String.valueOf(System.currentTimeMillis()));
+                    }
                 }
             } catch (IOException ex) {
                 Logger.getLogger(BlockFiles.class.getName()).log(Level.SEVERE, null, ex);
@@ -661,6 +719,10 @@ public class BlockFiles {
            Files.createDirectories(Paths.get(session.getPath() + "/pending/penalties/" + ((Penalty) obj).getStakeHash()));
            handler.writeObject(session.getPath() + "/pending/penalties/" + ((Penalty) obj).getStakeHash() + "/" + ((Penalty) obj).getHash(), obj);
         }
+        else if (obj instanceof NFT) {
+           Files.createDirectories(Paths.get(session.getPath() + "/pending/"));
+           handler.writeObject(session.getPath() + "/pending/" + ((NFT) obj).getHash(), obj);
+        }
     }
     
     public void deletePendingObject(Object obj) throws Exception {
@@ -674,6 +736,7 @@ public class BlockFiles {
             if (penalty != null)
             handler.deleteFile(session.getPath() + "/pending/penalties/" + penalty.getStakeHash() + "/" + penalty.getHash());
         }
+        else if (obj instanceof NFT) {handler.deleteFile(session.getPath() + "/pending/" + ((NFT) obj).getHash());}
     }
     
     public String[] getPendingObjects() {
@@ -771,6 +834,7 @@ public class BlockFiles {
         else if (obj instanceof LendContract) {txn = DatatypeConverter.printBase64Binary(((LendContract) obj).toBytes());}
         else if (obj instanceof StakeContract) {txn = DatatypeConverter.printBase64Binary(((StakeContract) obj).toBytes());} 
         else if (obj instanceof Penalty) {txn = DatatypeConverter.printBase64Binary(((Penalty) obj).toBytes());}
+        else if (obj instanceof NFT) {txn = DatatypeConverter.printBase64Binary(((NFT) obj).toBytes());}
         else {return;}
         JsonObject data = Json.createObjectBuilder().add("data", txn).build();
         thread.sendMessage(Message.BROADCASTTXNPENDING, data);

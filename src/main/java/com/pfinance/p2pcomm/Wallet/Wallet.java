@@ -5,6 +5,7 @@
  */
 package com.pfinance.p2pcomm.Wallet;
 
+import com.pfinance.p2pcomm.Blockchain.Block;
 import com.pfinance.p2pcomm.FileHandler.*;
 import com.pfinance.p2pcomm.Contracts.*;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
@@ -185,6 +186,15 @@ public class Wallet {
     public String getAddress() { return this.address; }
     public byte[] getSeed() {return this.seed;}
     public BorrowContract getBorrowContract() {return this.borrowContract;}
+    
+    public ArrayList<NFT> getNFTs() {
+        try {
+            return this.session.getBlockFileHandler().getWalletNFTs(this.address);
+        } catch (IOException ex) {
+            return new ArrayList<NFT>();
+        }
+    }
+    
     public StakeContract getStakeContract() {return this.stakeContract;}
     
     public Key getKey() throws Exception {
@@ -349,7 +359,7 @@ public class Wallet {
     
     //TRANSACTIONS, CONTRACTS
     
-    public Transaction createTransaction(ArrayList<TransactionOutput> outputs) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
+    public Transaction createTransaction(ArrayList<TransactionOutput> outputs, float fee) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         Transaction txn = new Transaction();
         float outputValue = 0;
         float inputValue = 0;
@@ -357,38 +367,44 @@ public class Wallet {
             txn.addOutput(output);
             return output;
         }).map(output -> output.value).reduce(outputValue, (accumulator, _item) -> accumulator + _item);
-        for (UTXO utxo : getUTXOInputs(outputValue)) {
+        for (UTXO utxo : getUTXOInputs(outputValue+fee)) {
             txn.addInput(utxo.getInput(this.getKey()));
             inputValue += utxo.toFloat();
         }
             
-        if (inputValue > outputValue) {
-            txn.addOutput(new TransactionOutput(this.address,inputValue - outputValue));
-        } else if (inputValue < outputValue) {
+        if (inputValue > (outputValue+fee)) {
+            txn.addOutput(new TransactionOutput(this.address,inputValue - (outputValue+fee)));
+        } else if (inputValue < (outputValue+fee)) {
             throw new Exception("Insufficient Funds");
         }
         return txn;
     }
     
-    public BorrowContract createBorrowContract() throws Exception {
+    public BorrowContract createBorrowContract(float fee) throws Exception {
         if (this.borrowContract != null) return null;
-        BorrowContract contract = new BorrowContract(this.address, new Transaction(),this.getKey().getKey());
+        BorrowContract contract = new BorrowContract(this.address, createTransaction(new ArrayList<TransactionOutput>(),fee),this.getKey().getKey());
         //this.borrowContract = contract;
         return contract;
     }
     
-    public LendContract createLendContract(BorrowContract contract, float amount) throws Exception {
-        LendContract lcontract = new LendContract(this.address,contract.getHash(),createTransaction(new TransactionOutput(contract.getBorrowerAddress(),amount).toList()),this.getKey().getKey());
+    public LendContract createLendContract(BorrowContract contract, float amount, float fee) throws Exception {
+        LendContract lcontract = new LendContract(this.address,contract.getHash(),createTransaction(new TransactionOutput(contract.getBorrowerAddress(),amount).toList(),fee),this.getKey().getKey());
         return lcontract;
     }
     
-    public StakeContract createStakeContract() throws Exception {
+    public StakeContract createStakeContract(float fee) throws Exception {
         if (this.borrowContract == null) return null;
-        StakeContract contract = new StakeContract(this.borrowContract.getHash(),new Transaction(),getKey().getKey());
+        StakeContract contract = new StakeContract(this.borrowContract.getHash(),createTransaction(new ArrayList<TransactionOutput>(),fee),getKey().getKey());
         return contract;
     }
     
+    public NFT createNFT(float fee, String type, String title, String description, byte[] data) throws Exception {
+        NFT nft = new NFT(this.address,createTransaction(new ArrayList<TransactionOutput>(),fee),type,getKey().getKey(), title, description, data);
+        return nft;
+    }
+    
     public ArrayList<UTXO> getUTXOInputs(float value) throws IOException, FileNotFoundException, ClassNotFoundException {
+        if (value == 0) return new ArrayList<UTXO>();
         ArrayList<UTXO> utxos = new ArrayList<>();
         float totalValue = 0;
         File f = new File(session.getPath() + "/wallets/" + this.name + "/utxos/");
@@ -410,5 +426,4 @@ public class Wallet {
         }
         return utxos;
     }
-    
 }
