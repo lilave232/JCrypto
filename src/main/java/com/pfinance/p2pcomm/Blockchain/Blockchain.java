@@ -114,15 +114,20 @@ public class Blockchain {
     
     public synchronized void addBlock(Block block) throws IOException, ClassNotFoundException, Exception {
         if (verifyBlock(block)) {
+            System.out.println("Block Verified");
             if (block.data.get(0) instanceof Transaction) {
                 Transaction reward = (Transaction) block.data.get(0);
                 this.totalFloat += reward.sum();
             }
-            this.index.addHash(new HashEntry(this.index.getHashes().size(),block.getHash()));
             session.getBlockFileHandler().saveBlock(block);
-            saveIndex();
-            saveFloat();
             System.out.println("Block Saved");
+            this.index.addHash(new HashEntry(this.index.getHashes().size(),block.getHash()));
+            System.out.println("Hash Added");
+            saveIndex();
+            System.out.println("Index Saved");
+            saveFloat();
+            System.out.println("Float Saved");
+            System.out.println("Finished Adding New Block");
         }
         if (this.index.getHashes().size() > 3) this.blockValidator.setValidateHeader(true);
         if (this.session.getValidation()) newBlock(this.session.getWallet().getStakeContract().getHash(),this.session.getWallet().getKey());

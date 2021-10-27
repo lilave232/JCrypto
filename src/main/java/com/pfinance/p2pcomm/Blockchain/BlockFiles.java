@@ -645,9 +645,8 @@ public class BlockFiles {
     
     public void saveBlock(Block block) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         Files.createDirectories(Paths.get(session.getPath() + "/blocks/"));
+        System.out.println("Creating Directory If Non-Existent");
         FileHandler handler = new FileHandler();
-        handler.writeObject(session.getPath() + "/blocks/" + block.getHash(),block);
-        
         for (int i = 0; i < block.data.size(); i++) {
             try {
                 Object data = block.data.get(i);
@@ -686,6 +685,9 @@ public class BlockFiles {
                 }
             } catch (Exception e) {}
         }
+        System.out.println("Added Transactions");
+        handler.writeObject(session.getPath() + "/blocks/" + block.getHash(),block);
+        System.out.println("Added Block");
         this.lentFundsUpdated = false;
     }
     
