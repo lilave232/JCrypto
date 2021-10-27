@@ -33,9 +33,9 @@ public class BallotBox {
         //System.out.println("Yes Votes:" + ballot.getYes());
         //System.out.println("No Votes:" + ballot.getNo());
         //System.out.println("Required Votes:" + this.requiredVotes);
-        if (ballot.getYes() >= this.requiredVotes)
+        if (ballot.getYes() > this.requiredVotes)
             return VoteResult.YES;
-        else if (ballot.getNo() >= this.requiredVotes)
+        else if (ballot.getNo() > this.requiredVotes)
             return VoteResult.NO;
         else
             return VoteResult.ONGOING;
