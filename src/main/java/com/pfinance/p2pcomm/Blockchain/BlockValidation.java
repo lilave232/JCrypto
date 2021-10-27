@@ -48,6 +48,7 @@ public class BlockValidation {
     }
     
     public boolean validate(Block block, String previousBlock) {
+        System.out.println(String.valueOf(System.currentTimeMillis()) + ": Validating block " + block.getHash());
         blockUtxosUsed = new ArrayList<String>();
         reward = 0;
         try {
@@ -58,17 +59,19 @@ public class BlockValidation {
                     Long endScheduledTime = this.session.getScheduler().getEndTime();
                     Long currentTime = System.currentTimeMillis();
                     if (scheduledTime == 0) return false;
+                    System.out.println("scheduledTime not equal to zero");
                     //if (!(Long.valueOf(block.getTimestamp()) > currentTime - 60000 && Long.valueOf(block.getTimestamp()) < currentTime + 60000)) return false;
                     if (!((currentTime >= scheduledTime && currentTime <= scheduledTime + 180000))) return false;
+                    System.out.println("Scheduled Time is Accurate");
                 }
-                //System.out.println("Validating Header");
+                System.out.println("Validating Header");
                 if (!block.getHash().equals(DigestUtils.sha256Hex(block.getPreviousBlockHash()+block.getStakeContractHash()+block.getTimestamp()+block.hashData())))
                     return false;
-                //System.out.println("Hash Is Equal");
+                System.out.println("Block Hash is Equal");
                 if (!block.getPreviousBlockHash().equals(previousBlock)) return false;
-                //System.out.println("Previous Block is Equal");
+                System.out.println("Previous Block Hash Is Equal");
                 if (!verifyStakeHash(block.getStakeContractHash())) return false;
-                //System.out.println("Confirmed Stake Hash");
+                System.out.println("Stake Hash Verified");
             }
             for (Object obj : block.getData().subList(1, block.getData().size())) {
                 if (obj instanceof Transaction){if (!verifyTransaction((Transaction) obj)) return false;}
@@ -83,9 +86,9 @@ public class BlockValidation {
                 else if (obj instanceof NFTTransfer) {if (!verifyNFTTransfer((NFTTransfer) obj)) return false;}
                 else {return false;}
             }
-            //System.out.println("Confirmed Transactions");
+            System.out.println("Confirmed Transactions");
             if (!verifyBase((Transaction) block.data.get(0))) return false;
-            //System.out.println("Confimed Base Transaction");
+            System.out.println("Confimed Base Transaction");
             return true;
         } catch (Exception e){e.printStackTrace();return false;}
     }
@@ -137,35 +140,35 @@ public class BlockValidation {
     }
     
     public boolean verifyNFTTransfer(NFTTransfer transfer) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
-        System.out.println("Confirming NFT Transfer");
+        //System.out.println("Confirming NFT Transfer");
         String hash = DigestUtils.sha256Hex(transfer.getDate() + transfer.getNFTHash() + transfer.getPreviousHash() + transfer.getTransferAddress() + transfer.getSaleTransaction().getHash());
         if (!transfer.getHash().equals(hash)) return false;
-        System.out.println("Hash Confirmed");
+        //System.out.println("Hash Confirmed");
         NFT nft = (NFT) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + transfer.getNFTHash() + "/nft");
         if (nft == null) return false;
-        System.out.println("NFT Found");
+        //System.out.println("NFT Found");
         HashIndex index = (HashIndex) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + transfer.getNFTHash() + "/hashIndex");
         if (index == null) return false;
-        System.out.println("Hash Index Found");
+        //System.out.println("Hash Index Found");
         String previousHash = index.getHashes().get(index.getHashes().size()-1).hash;
         if (!previousHash.equals(transfer.getPreviousHash())) return false;
-        System.out.println("Previous Hash Equal");
+        //System.out.println("Previous Hash Equal");
         if (index.getHashes().size() == 1) {
             if (!nft.getInitiatorAddress().equals(DigestUtils.sha256Hex(transfer.getKey().toByteArray()))) return false;
-            System.out.println("Initiator Address Equals");
+            //System.out.println("Initiator Address Equals");
             if (!Cryptography.verify(nft.getSignature(),nft.getHash().getBytes(),transfer.getKey())) return false;
-            System.out.println("Ownership Confirmed");
+            //System.out.println("Ownership Confirmed");
         } else {
             NFTTransfer previousTransfer = (NFTTransfer) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + transfer.getNFTHash() + "/" + previousHash);
             if (previousTransfer == null) return false;
-            System.out.println("Previous Transfer Found");
+            //System.out.println("Previous Transfer Found");
             if (!previousTransfer.getTransferAddress().equals(DigestUtils.sha256Hex(transfer.getKey().toByteArray()))) return false;
-            System.out.println("Confirmed Previous Transfer was to Address");
+            //System.out.println("Confirmed Previous Transfer was to Address");
         }
         if (!verifyTransaction(transfer.getSaleTransaction())) return false;
-        System.out.println("Sale Transaction Verified");
+        //System.out.println("Sale Transaction Verified");
         if (!Cryptography.verify(transfer.getSignature(),hash.getBytes(),transfer.getKey())) return false;
-        System.out.println("Ownership Verified");
+        //System.out.println("Ownership Verified");
         return true;
     }
     
