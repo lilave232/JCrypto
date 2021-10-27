@@ -97,9 +97,12 @@ public class PeerMessageHandler {
                         ByteArrayInputStream in = new ByteArrayInputStream(object);
                         ObjectInputStream is = new ObjectInputStream(in);
                         Object txn = (Object) is.readObject();
-                        this.peer.getSession().getBlockchain().addPendingTxn(txn);
                         if (this.peer.getSession().getValidation()) {
-                            this.peer.getSession().getBlockchain().addData(txn);
+                            if (this.peer.getSession().getBlockchain().addData(txn)) {
+                                this.peer.getSession().getBlockchain().addPendingTxn(txn);
+                            }
+                        } else {
+                            this.peer.getSession().getBlockchain().addPendingTxn(txn);
                         }
                     }
                 }
@@ -110,9 +113,12 @@ public class PeerMessageHandler {
                         ByteArrayInputStream in = new ByteArrayInputStream(object);
                         ObjectInputStream is = new ObjectInputStream(in);
                         Object txn = (Object) is.readObject();
-                        this.peer.getSession().getBlockchain().addPendingTxn(txn);
                         if (this.peer.getSession().getValidation()) {
-                            this.peer.getSession().getBlockchain().addData(txn);
+                            if (this.peer.getSession().getBlockchain().addData(txn)) {
+                                this.peer.getSession().getBlockchain().addPendingTxn(txn);
+                            }
+                        }  else {
+                            this.peer.getSession().getBlockchain().addPendingTxn(txn);
                         }
                     }
                 }

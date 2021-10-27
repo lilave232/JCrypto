@@ -8,8 +8,11 @@ package com.pfinance.p2pcomm.Blockchain;
 import com.pfinance.p2pcomm.Contracts.BorrowContract;
 import com.pfinance.p2pcomm.Contracts.LendContract;
 import com.pfinance.p2pcomm.Contracts.NFT;
+import com.pfinance.p2pcomm.Contracts.NFTTransfer;
 import com.pfinance.p2pcomm.Contracts.StakeContract;
 import com.pfinance.p2pcomm.FileHandler.FileHandler;
+import com.pfinance.p2pcomm.FileHandler.HashEntry;
+import com.pfinance.p2pcomm.FileHandler.HashIndex;
 import com.pfinance.p2pcomm.FileHandler.Validator;
 import com.pfinance.p2pcomm.FileHandler.ValidatorIndex;
 import com.pfinance.p2pcomm.Messaging.Message;
@@ -474,12 +477,12 @@ public class BlockFiles {
         File[] files = f.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return file.isFile();
+                return file.isDirectory();
             }
         });
         if (files != null) {
             for (File file : files) {
-                NFT nft = loadNFT(file.getPath());
+                NFT nft = loadNFT(file.getPath() + "/nft");
                 if (nft != null) {
                     returnArray.add(nft);
                 }
@@ -560,13 +563,52 @@ public class BlockFiles {
     }
     
     public void saveNFT(NFT object) throws IOException {
-        Files.createDirectories(Paths.get(session.getPath() + "/contracts/nfts/"));
+        Files.createDirectories(Paths.get(session.getPath() + "/contracts/nfts/" + object.getHash()));
         FileHandler handler = new FileHandler();
-        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getHash(), object);
+        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getHash() + "/nft", object);
+        HashIndex hashIndex = new HashIndex();
+        hashIndex.addHash(new HashEntry(0,object.getHash()));
+        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getHash() + "/hashIndex", hashIndex);
         if (this.getWalletAddresses().contains(object.getInitiatorAddress())) {
             String path = this.getWalletPath(object.getInitiatorAddress());
-            Files.createDirectories(Paths.get(path + "/contracts/nfts"));
-            handler.writeObject(path + "/contracts/nfts/" + object.getHash(), object);
+            Files.createDirectories(Paths.get(path + "/contracts/nfts/" + object.getHash()));
+            handler.writeObject(path + "/contracts/nfts/" + object.getHash() + "/nft", object);
+        }
+    }
+    
+    public String getNFTOwner(String nftHash) throws IOException, FileNotFoundException, ClassNotFoundException {
+        FileHandler handler = new FileHandler();
+        HashIndex hashIndex = (HashIndex) handler.readObject(session.getPath() + "/contracts/nfts/" + nftHash + "/hashIndex");
+        if (hashIndex == null) return null;
+        if (hashIndex.getHashes().size() == 1) {
+            NFT nft = (NFT) handler.readObject(session.getPath() + "/contracts/nfts/" + nftHash + "/nft");
+            return nft.getInitiatorAddress();
+        } else if (hashIndex.getHashes().size() > 1) {
+            String previousHash = hashIndex.getHashes().get(hashIndex.getHashes().size()-1).hash;
+            NFTTransfer transfer = (NFTTransfer) handler.readObject(session.getPath() + "/contracts/nfts/" + nftHash + "/" + previousHash);
+            return transfer.getTransferAddress();
+        }
+        return null;
+    }
+    
+    public void saveNFTTransfer(NFTTransfer object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
+        FileHandler handler = new FileHandler();
+        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getNFTHash() + "/" + object.getHash(), object);
+        HashIndex hashIndex = (HashIndex) handler.readObject(session.getPath() + "/contracts/nfts/" + object.getNFTHash() + "/hashIndex");
+        if (hashIndex == null) return;
+        String currentOwner = getNFTOwner(object.getNFTHash());
+        hashIndex.addHash(new HashEntry(hashIndex.getHashes().size(),object.getHash()));
+        handler.writeObject(session.getPath() + "/contracts/nfts/" + object.getNFTHash() + "/hashIndex", hashIndex);
+        if (this.getWalletAddresses().contains(currentOwner)) {
+            String path = this.getWalletPath(currentOwner);
+            handler.deleteFile(path + "/contracts/nfts/" + object.getNFTHash() + "/nft");
+        }
+        if (this.getWalletAddresses().contains(object.getTransferAddress())) {
+            String path = this.getWalletPath(object.getTransferAddress());
+            NFT nft = (NFT) handler.readObject(session.getPath() + "/contracts/nfts/" + object.getNFTHash() + "/nft");
+            if (nft == null) return;
+            Files.createDirectories(Paths.get(path + "/contracts/nfts/" + object.getNFTHash()));
+            handler.writeObject(path + "/contracts/nfts/" + object.getNFTHash() + "/nft", nft);
         }
     }
     
@@ -633,6 +675,10 @@ public class BlockFiles {
                     saveNFT((NFT) data);
                     saveUTXO(((NFT) data).getMintFee());
                     deleteUTXO(((NFT) data).getMintFee());
+                } else if (data instanceof NFTTransfer) {
+                    saveNFTTransfer((NFTTransfer) data);
+                    saveUTXO(((NFTTransfer) data).getSaleTransaction());
+                    deleteUTXO(((NFTTransfer) data).getSaleTransaction());
                 }
                 deletePendingObject(data);
                 if (this.lentFundsUpdated) {
@@ -675,6 +721,10 @@ public class BlockFiles {
                         try { saveNFT((NFT) data);} catch (Exception e) {}
                         try { saveUTXO(((NFT) data).getMintFee(),address);} catch (Exception e) {}
                         try { deleteUTXO(((NFT) data).getMintFee(),address);} catch (Exception e) {}
+                    } else if (data instanceof NFTTransfer) {
+                        try { saveNFTTransfer((NFTTransfer) data);} catch (Exception e) {}
+                        try { saveUTXO(((NFTTransfer) data).getSaleTransaction(),address);} catch (Exception e) {}
+                        try { deleteUTXO(((NFTTransfer) data).getSaleTransaction(),address);} catch (Exception e) {}
                     }
                     if (this.lentFundsUpdated) {
                         if (this.getWalletPath(address) == null) return;
@@ -723,6 +773,10 @@ public class BlockFiles {
            if (getPendingObject(((NFT) obj).getHash()) != null) return;
            handler.writeObject(session.getPath() + "/pending/" + ((NFT) obj).getHash(), obj);
         }
+        else if (obj instanceof NFTTransfer) {
+            if (getPendingObject(((NFTTransfer) obj).getHash()) != null) return;
+            handler.writeObject(session.getPath() + "/pending/" + ((NFTTransfer) obj).getNFTHash(), obj);
+        }
     }
     
     public void deletePendingObject(Object obj) throws Exception {
@@ -737,6 +791,7 @@ public class BlockFiles {
             handler.deleteFile(session.getPath() + "/pending/penalties/" + penalty.getStakeHash() + "/" + penalty.getHash());
         }
         else if (obj instanceof NFT) {handler.deleteFile(session.getPath() + "/pending/" + ((NFT) obj).getHash());}
+        else if (obj instanceof NFTTransfer) {handler.deleteFile(session.getPath() + "/pending/" + ((NFTTransfer) obj).getNFTHash());}
     }
     
     public String[] getPendingObjects() {
@@ -835,6 +890,7 @@ public class BlockFiles {
         else if (obj instanceof StakeContract) {txn = DatatypeConverter.printBase64Binary(((StakeContract) obj).toBytes());} 
         else if (obj instanceof Penalty) {txn = DatatypeConverter.printBase64Binary(((Penalty) obj).toBytes());}
         else if (obj instanceof NFT) {txn = DatatypeConverter.printBase64Binary(((NFT) obj).toBytes());}
+        else if (obj instanceof NFTTransfer) {txn = DatatypeConverter.printBase64Binary(((NFTTransfer) obj).toBytes());}
         else {return;}
         JsonObject data = Json.createObjectBuilder().add("data", txn).build();
         thread.sendMessage(Message.BROADCASTTXNPENDING, data);

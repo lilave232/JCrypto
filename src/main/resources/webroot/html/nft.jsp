@@ -16,6 +16,9 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link text-secondary" id="mint-tab" data-bs-toggle="tab" data-bs-target="#mint" type="button" role="tab" aria-controls="send" aria-selected="false">Mint</button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-secondary" id="transfer-tab" data-bs-toggle="tab" data-bs-target="#transfer" type="button" role="tab" aria-controls="transfer" aria-selected="false">Transfer</button>
+                        </li>
                     </ul>
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane show active text-start rounded-bottom bg-white border-start border-end border-bottom p-3" id="owned" role="tabpanel" aria-labelledby="owned-tab">
@@ -26,6 +29,7 @@
                                     </div>
                                     <h2 class="m-0">${nft.getTitle()}</h2>
                                     <h4 class="m-0">${nft.getDescription()}</h4>
+                                    <p class="m-0">${nft.getHash()}</p>
                                     <p class="m-0">${nft.getInceptionDateFormatted()}</p>
                                 </div>
                             </c:forEach>
@@ -66,6 +70,30 @@
                                 </div>
                                 <div class="w-100 text-center">
                                     <input class="btn btn-secondary m-2 fs-3 text-center" type="submit" value="Mint"/>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade text-start rounded-bottom bg-white border-start border-end border-bottom p-3" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
+                            <form action="/transferNFT" method="POST" id="transferNFT">
+                                <div class="d-flex align-items-center">
+                                    <label for="nft-contract">NFT Contract:</label>
+                                    <select name="nft-contract" id="nft-contract" form="transferNFT">
+                                        <c:forEach items="${nfts}" var="nft">
+                                                <option value="${nft.getHash()}">${nft.getHash()}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-flex align-items-center">
+                                    <label for="transfer-address">Transfer To Address: </label>
+                                    <input class="btn m-2 fs-6 text-start border-secondary flex-fill" placeholder="Address" id="transfer-address" type="text" name="transfer-address" required>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <label for="pword">Wallet Password: </label>
+                                    <input class="btn m-2 fs-6 text-start border-secondary flex-fill" placeholder="Password" id="pword" type="password" name="pword" required>
+                                </div>
+                                <div class="w-100 text-center">
+                                    <input class="btn btn-secondary m-2 fs-3 text-center" type="submit" value="Transfer"/>
                                 </div>
                             </form>
                         </div>

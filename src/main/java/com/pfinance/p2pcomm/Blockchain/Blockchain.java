@@ -142,6 +142,9 @@ public class Blockchain {
             if (this.blockValidator.verifyPenalty((Penalty) object)){block.addData(object, 0);return true;}
         } else if (object instanceof NFT) {
             if (this.blockValidator.verifyNFT((NFT) object)){block.addData(object,getFee(((NFT) object).getMintFee()));return true;}
+        } else if (object instanceof NFTTransfer) {
+            if (session.getBlockchain().block.data.contains(object)) return false;
+            if (this.blockValidator.verifyNFTTransfer((NFTTransfer) object)){block.addData(object,getFee(((NFTTransfer) object).getSaleTransaction()));return true;}
         }
         return false;
     }
@@ -178,6 +181,7 @@ public class Blockchain {
         else if (data instanceof StakeContract) {addPending(((StakeContract) data).getValidatorCommission());}
         else if (data instanceof Penalty) {if (!this.blockValidator.verifyPenaltyPending((Penalty) data)) return;}
         else if (data instanceof NFT) {addPending(((NFT) data).getMintFee());}
+        else if (data instanceof NFTTransfer) {addPending(((NFTTransfer) data).getSaleTransaction());}
         session.getBlockFileHandler().savePendingObject(data);
     }
     

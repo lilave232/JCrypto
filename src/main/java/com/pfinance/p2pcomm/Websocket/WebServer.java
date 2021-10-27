@@ -125,6 +125,10 @@ public class WebServer extends Thread {
             servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(System.getProperty("user.dir") + "/tmp"));
             servletContextHandler.addServlet(servletHolder, "/nft");
             
+            TransferNFTServlet transferNFTServlet = new TransferNFTServlet(this.session);
+            servletHolder = new ServletHolder(transferNFTServlet);
+            servletContextHandler.addServlet(servletHolder, "/transferNFT");
+            
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
             //holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");

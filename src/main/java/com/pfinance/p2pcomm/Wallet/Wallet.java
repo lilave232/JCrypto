@@ -403,6 +403,30 @@ public class Wallet {
         return nft;
     }
     
+    public NFT getNFT(String hash) {
+        try {
+            NFT nft = (NFT) new FileHandler().readObject(this.session.getPath() + "/wallets/" + this.getName() + "/contracts/nfts/" + hash + "/nft");
+            return nft;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public NFTTransfer transferNFT(Transaction saleTransaction, String nftHash, String transferToAddress) {
+        try {
+            NFT nft = getNFT(nftHash);
+            if (nft == null) return null;
+            HashIndex index = (HashIndex) new FileHandler().readObject(this.session.getPath() + "/contracts/nfts/" + nft.getHash() + "/hashIndex");
+            if (index == null) return null;
+            String previousHash = index.getHashes().get(index.getHashes().size()-1).hash;
+            NFTTransfer transfer = new NFTTransfer(saleTransaction, previousHash, nft.getHash(), transferToAddress, this.getKey().getKey());
+            return transfer;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
     public ArrayList<UTXO> getUTXOInputs(float value) throws IOException, FileNotFoundException, ClassNotFoundException {
         if (value == 0) return new ArrayList<UTXO>();
         ArrayList<UTXO> utxos = new ArrayList<>();
