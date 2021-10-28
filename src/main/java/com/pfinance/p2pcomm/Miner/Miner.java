@@ -80,7 +80,7 @@ public class Miner {
     
     public void mine() throws IOException, Exception {
         synchronized (session.getPeer().getServer().getHandler()) {
-            session.getPeer().getBallotBox().setRequired(session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size());
+            session.getPeer().getBallotBox().setRequired(session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size()/2);
             boolean result = session.getBlockchain().verifyBlock(session.getBlockchain().block);
             if (!result) {
                 System.out.println("Could not validate block");
@@ -98,6 +98,7 @@ public class Miner {
             JsonObject value = Json.createObjectBuilder().add("block", data.getString("data")).add("vote", voteObject).build();
             session.getPeer().sendMessage(Message.BLOCKVALIDATIONVOTE, value);
             int checkVote = session.getPeer().getBallotBox().checkVotes(session.getBlockchain().block.getHash(),VoteType.BLOCK);
+            System.out.println(checkVote);
             if (checkVote == VoteResult.YES) {
                 System.out.println("Block Confirmed");
                 session.getBlockchain().addBlock(session.getBlockchain().block);

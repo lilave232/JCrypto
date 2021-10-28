@@ -126,6 +126,7 @@ public class Blockchain {
             saveIndex();
             System.out.println("Index Saved");
             saveFloat();
+            this.blockValidator.setStakeRequirement(this.totalFloat * (float)0.001);
             System.out.println("Float Saved");
             System.out.println("Finished Adding New Block");
         }

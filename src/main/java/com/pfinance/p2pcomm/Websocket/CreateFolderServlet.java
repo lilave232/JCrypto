@@ -44,7 +44,7 @@ public class CreateFolderServlet extends HttpServlet {
                 Logger.getLogger(CreateFolderServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        response.sendRedirect("/index");
+        response.sendRedirect("/");
     }
     
 }
