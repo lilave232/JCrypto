@@ -27,16 +27,17 @@ public class Server extends Thread {
     public static String port = null;
     private ServerSocket serverSocket = null;
     public static String hostName = null;
+    public static String hostAddress = null;
     private final Set<ServerThread> serverThreads;
     private final Peer peer;
     private final ServerMessageHandler handler;
     
-    public Server(String port, Peer peer) throws IOException {
+    public Server(String address, String port, Peer peer) throws IOException {
         this.handler = new ServerMessageHandler(this);
         this.serverThreads = new HashSet<>();
         this.port = port;
         this.serverSocket = new ServerSocket(Integer.valueOf(this.port));
-        this.hostName = InetAddress.getLocalHost().getHostName();
+        this.hostName = address;
         this.peer = peer;
     }
     

@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,8 +49,8 @@ public class Peer {
         this.session = session;
     }
     
-    public void connect(String port) throws IOException {
-        server = new Server(port,this);
+    public void connect(String address, String port) throws IOException {
+        server = new Server(address, port,this);
         server.start();
         loadPeerFile();
     }
@@ -100,7 +102,13 @@ public class Peer {
                 peerThreads.add(peerThread);
                 writePeerToFile(address, port);
             }
-        } catch (Exception e) {
+        } catch (ConnectException e) {
+            System.out.println("Failed to Connect");
+        } catch (SocketTimeoutException e) {
+            System.out.println("Failed to Connect");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
             if (socket != null) socket.close();
             else System.out.println("invalid input. skipping to next step.");
         }
@@ -143,8 +151,13 @@ public class Peer {
         Thread.currentThread().getThreadGroup().enumerate(threads);
         ArrayList<String> peers = new ArrayList<String>();
         for (int i = 0; i < threads.length;i++) {
-            if (threads[i] instanceof PeerThread && !peers.contains(((PeerThread)threads[i]).toString())) {
-                peers.add(((PeerThread)threads[i]).toString());
+            if (threads[i] instanceof PeerThread) {
+                String hostName = ((PeerThread)threads[i]).getHostName() + ":" + ((PeerThread)threads[i]).getPort();
+                String hostAddress = ((PeerThread)threads[i]).getHostAddress() + ":" + ((PeerThread)threads[i]).getPort();
+                if (!peers.contains(hostName) && !peers.contains(hostAddress)) {
+                    peers.add(hostName);
+                    peers.add(hostAddress);
+                }
             }
             else if (threads[i] instanceof Server && !peers.contains(((Server)threads[i]).toString()))
                 peers.add(((Server)threads[i]).toString());

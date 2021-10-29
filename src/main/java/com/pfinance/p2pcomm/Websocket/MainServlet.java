@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,7 +36,7 @@ public class MainServlet extends HttpServlet {
         else {
             try {
                 if (session.getPeer() == null) {
-                    session.connectPeer("7777");
+                    session.connectPeer(InetAddress.getLocalHost().getHostName(), "7777");
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MainServlet.class.getName()).log(Level.SEVERE, null, ex);

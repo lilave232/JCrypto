@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,7 +70,7 @@ public class PeerServlet extends HttpServlet {
     {
         try {
             if (request.getParameter("action").equals("Connect Peer")) {
-                session.connectPeer(request.getParameter("port"));
+                session.connectPeer(InetAddress.getLocalHost().getHostName(), request.getParameter("port"));
             }
             if (request.getParameter("action").equals("Disconnect Peer")) {
                 session.disconnectPeer();

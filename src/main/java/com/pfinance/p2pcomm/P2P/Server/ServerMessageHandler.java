@@ -134,7 +134,13 @@ public class ServerMessageHandler {
                             session.getPeer().getBallotBox().addVote(block.getHash(),VoteType.BLOCK, vote);
                             System.out.println("Vote Received");
                             int checkVote = session.getPeer().getBallotBox().checkVotes(block.getHash(),VoteType.BLOCK);
-                            if (checkVote == VoteResult.YES) {System.out.println("Block Confirmed");session.getBlockchain().addBlock(block);}
+                            if (checkVote == VoteResult.YES) {
+                                System.out.println("Block Confirmed");
+                                session.getBlockchain().addBlock(block);
+                                String hashObject = StringEscapeUtils.escapeJson(DatatypeConverter.printBase64Binary(this.server.getPeer().getSession().getBlockchain().getHashIndex().toBytes()));
+                                JsonObject hashes = Json.createObjectBuilder().add("hashes", hashObject).build();
+                                this.server.sendMessage(Message.DOWNLOADHASHRECEIVED, hashes);
+                            }
                             if (checkVote == VoteResult.NO) {
                                 System.out.println("Assessing Penalty");
                                 Penalty penalty = session.getBlockchain().generatePenalty(contract, String.valueOf(System.currentTimeMillis()));

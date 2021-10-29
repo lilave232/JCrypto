@@ -56,7 +56,7 @@ public class Main {
         try {
             try {
                 WebServer webserver = new WebServer(session);
-                webserver.start();
+                //webserver.start();
             } catch (Exception e) {}
             prompt();
         } catch (Exception e) {

@@ -30,6 +30,7 @@ public class PeerThread extends Thread {
     private int port;
     private int localPort;
     private String localHostAddress = null;
+    private String hostName = null;
     private String hostAddress = null;
     private PrintWriter printWriter;
     private Socket socket;
@@ -39,7 +40,8 @@ public class PeerThread extends Thread {
         this.localHostAddress = socket.getLocalAddress().getHostName();
         this.localPort = socket.getLocalPort();
         this.port = socket.getPort();
-        this.hostAddress = socket.getInetAddress().getHostName();
+        this.hostName = socket.getInetAddress().getHostName();
+        this.hostAddress = socket.getInetAddress().getHostAddress();
         this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.printWriter = new PrintWriter(socket.getOutputStream(), true);
         this.socket = socket;
@@ -99,7 +101,8 @@ public class PeerThread extends Thread {
     }
     
     public int getPort() {return port;}
-    public String getHostAddress() {return hostAddress;}
+    public String getHostName() {return hostName;}
+    public String getHostAddress() { return this.hostAddress; }
     public String toString() {return this.hostAddress + ":" + this.port;}
     
 }
