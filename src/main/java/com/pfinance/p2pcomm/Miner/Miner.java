@@ -98,7 +98,6 @@ public class Miner {
             JsonObject value = Json.createObjectBuilder().add("block", data.getString("data")).add("vote", voteObject).build();
             session.getPeer().sendMessage(Message.BLOCKVALIDATIONVOTE, value);
             int checkVote = session.getPeer().getBallotBox().checkVotes(session.getBlockchain().block.getHash(),VoteType.BLOCK);
-            System.out.println(checkVote);
             if (checkVote == VoteResult.YES) {
                 System.out.println("Block Confirmed");
                 session.getBlockchain().addBlock(session.getBlockchain().block);
