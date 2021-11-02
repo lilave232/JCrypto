@@ -12,11 +12,13 @@ import com.pfinance.p2pcomm.Contracts.*;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import com.pfinance.p2pcomm.Messaging.Message;
 import com.pfinance.p2pcomm.Wallet.*;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
@@ -84,6 +87,7 @@ public class Blockchain {
     }
     
     public void newBlock(String stakeHash, Key key) throws ClassNotFoundException, Exception {
+        this.blockValidator.blockUtxosUsed = new ArrayList<>();
         String time = Long.toString(System.currentTimeMillis());
         if (session.getPeer() != null && session.getValidation()) {
             session.getScheduler().clearSchedule();
@@ -150,10 +154,44 @@ public class Blockchain {
             if (this.blockValidator.verifyNFT((NFT) object)){block.addData(object,getFee(((NFT) object).getMintFee()));return true;}
         } else if (object instanceof NFTTransfer) {
             if (session.getBlockchain().block.data.contains(object)) return false;
-            if (this.blockValidator.verifyNFTTransfer((NFTTransfer) object)){block.addData(object,getFee(((NFTTransfer) object).getSaleTransaction()));return true;}
+            if (this.blockValidator.verifyNFTTransfer((NFTTransfer) object)){
+                if (((NFTTransfer) object).getSaleTransaction() != null) {
+                    block.addData(object,getFee(((NFTTransfer) object).getSaleTransaction()));
+                } else if (((NFTTransfer) object).getBidTransaction() != null) {
+                    block.addData(object,getHeldFee(((NFTTransfer) object).getBidTransaction().getTransaction(),((NFTTransfer) object).getNFTHash()));
+                } else {
+                    return false;
+                }
+                return true;
+            }
+        } else if (object instanceof EndLendContract) {
+            if (this.blockValidator.verifyEndLendContract((EndLendContract)object)) {block.addData(object, getFee(((EndLendContract) object).getValidatorCommission()));return true;}
+        } else if (object instanceof ListNFT) {
+            if (this.blockValidator.verifyListNFT((ListNFT)object)) {block.addData(object, getFee(((ListNFT) object).getValidatorCommission()));return true;}
+        } else if (object instanceof Bid) {
+            if (this.blockValidator.verifyBid((Bid)object)) {block.addData(object, 0); return true;}
         }
         return false;
     }
+    
+    public float getHeldFee(Transaction transaction, String contractHash) throws IOException, ClassNotFoundException {
+        float inputSum = sumHeldInputs(transaction.getInputs(),contractHash);
+        float fee = inputSum - transaction.sum();
+        return fee;
+    }
+    
+    public float sumHeldInputs(ArrayList<TransactionInput> inputs, String contractHash) throws IOException, ClassNotFoundException, FileNotFoundException {
+        float inputSum = 0;
+        for (TransactionInput input : inputs) {
+            UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/held_utxos/" + contractHash + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
+            if (utxo == null) return 0;
+            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
+            //if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
+            inputSum += utxo.toFloat();
+        }
+        return inputSum;
+    }
+    
     
     public float getFee(Transaction transaction) throws IOException, ClassNotFoundException {
         float inputSum = sumInputs(transaction.getInputs());
@@ -166,18 +204,21 @@ public class Blockchain {
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return 0;
-            if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
-            if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
+            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
+            //if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
             inputSum += utxo.toFloat();
         }
         return inputSum;
     }
     
     public boolean addData(Object object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
-        boolean flag = false;
-        if (this.block == null) return false;
-        if (verifyTransaction(object)) {flag = true;}
-        return flag;
+        synchronized (this.session) {
+            boolean flag = false;
+            if (this.block == null) return false;
+            if (verifyTransaction(object)) {flag = true;}
+            return flag;
+        }
+        
     }
     
     public void addPendingTxn(Object data) throws IOException, ClassNotFoundException, FileNotFoundException, Exception {
@@ -187,7 +228,13 @@ public class Blockchain {
         else if (data instanceof StakeContract) {addPending(((StakeContract) data).getValidatorCommission());}
         else if (data instanceof Penalty) {if (!this.blockValidator.verifyPenaltyPending((Penalty) data)) return;}
         else if (data instanceof NFT) {addPending(((NFT) data).getMintFee());}
-        else if (data instanceof NFTTransfer) {addPending(((NFTTransfer) data).getSaleTransaction());}
+        else if (data instanceof NFTTransfer) {
+            if (((NFTTransfer) data).getSaleTransaction() != null) addPending(((NFTTransfer) data).getSaleTransaction());
+            else if (((NFTTransfer) data).getBidTransaction() != null) addPending(((NFTTransfer) data).getBidTransaction().getTransaction());
+        }
+        else if (data instanceof EndLendContract) {addPending(((EndLendContract) data).getValidatorCommission());}
+        else if (data instanceof ListNFT) {addPending(((ListNFT) data).getValidatorCommission());}
+        else if (data instanceof Bid) {addPending(((Bid) data).getTransaction());}
         session.getBlockFileHandler().savePendingObject(data);
     }
     
@@ -257,6 +304,7 @@ public class Blockchain {
             this.totalFloat = (Float)obj;
             loadFloat = false;
         }
+        ArrayList<HashEntry> not_found = new ArrayList<>();
         for (HashEntry entry : this.index.getHashes()) {
             Block b = session.getBlockFileHandler().getBlock(entry.hash);
             if (b != null) {
@@ -265,14 +313,20 @@ public class Blockchain {
                     Transaction reward = (Transaction) b.data.get(0);
                     this.totalFloat += reward.sum();
                 }
+            } else {
+                not_found.add(entry);
             }
         }
+        this.index.removeAllHashes(not_found);
+        saveIndex();
         this.blockValidator.setStakeRequirement(this.totalFloat * (float)0.001);
     }
     
-    public void saveIndex() throws IOException {
-        FileHandler handler = new FileHandler();
-        handler.writeBytes(session.getPath() + "/blocks/index",index.toBytes());
+    public void saveIndex() {
+        try {
+            FileHandler handler = new FileHandler();
+            handler.writeBytes(session.getPath() + "/blocks/index",index.toBytes()); 
+        } catch (IOException e) {}
     }
     
     public void loadIndex() throws IOException, FileNotFoundException, ClassNotFoundException {

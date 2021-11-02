@@ -220,7 +220,7 @@ public class Wallet {
         returnString.append(String.format("|%-131s|\n", "Usable Balance: " + usableBalance));
         returnString.append(String.format("|%-131s|\n", "Borrowed Balance: " + borrowBalance));
         returnString.append(String.format("|%-131s|\n", "Penalties Incurred: " + penaltyBalance));
-        returnString.append(String.format("|%-131s|\n", "Net Borrowed: " + String.valueOf(borrowBalance - penaltyBalance)));
+        returnString.append(String.format("|%-131s|\n", "Net Borrowed: " + String.valueOf(borrowBalance + penaltyBalance)));
         returnString.append(String.format("|%-131s|\n", "Lent Balance: " + lentBalance));
         returnString.append(String.format("|%-131s|\n", "").replace(' ', '-'));
         return returnString.toString();
@@ -356,6 +356,29 @@ public class Wallet {
         } 
     }
     
+    public ArrayList<LendContract> getLendContracts() {
+        ArrayList<LendContract> lendContracts = new ArrayList<LendContract>();
+        try {
+            float balance = 0;
+            File f = new File(session.getPath() + "/wallets/" + this.name + "/contracts/lendContracts/");
+            File[] files = f.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return file.isFile();
+                }
+            });
+            FileHandler handler = new FileHandler();
+            for (File file : files) {
+                LendContract contract = (LendContract) handler.readObject(file.getPath());
+                lendContracts.add(contract);
+            }
+            
+        } catch (Exception e) {
+            return new ArrayList<LendContract>();
+        }
+        return lendContracts;
+    }
+    
     
     //TRANSACTIONS, CONTRACTS
     
@@ -392,15 +415,26 @@ public class Wallet {
         return lcontract;
     }
     
+    public EndLendContract endLendContract(LendContract contract, float fee) throws Exception {
+        EndLendContract elcontract = new EndLendContract(contract.getHash(),contract.getBorrowContractHash(),createTransaction(new ArrayList<TransactionOutput>(),fee), this.getKey());
+        return elcontract;
+    }
+    
     public StakeContract createStakeContract(float fee) throws Exception {
         if (this.borrowContract == null) return null;
         StakeContract contract = new StakeContract(this.borrowContract.getHash(),createTransaction(new ArrayList<TransactionOutput>(),fee),getKey().getKey());
         return contract;
     }
     
+    
     public NFT createNFT(float fee, String type, String title, String description, byte[] data) throws Exception {
         NFT nft = new NFT(this.address,createTransaction(new ArrayList<TransactionOutput>(),fee),type,getKey().getKey(), title, description, data);
         return nft;
+    }
+    
+    public ListNFT listNFT(NFT nft, float fee) throws Exception {
+        ListNFT list = new ListNFT(nft.getHash(),createTransaction(new ArrayList<TransactionOutput>(),fee),getKey());
+        return list;
     }
     
     public NFT getNFT(String hash) {
@@ -425,6 +459,73 @@ public class Wallet {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    public NFTTransfer transferNFT(Bid saleTransaction, String nftHash, String transferToAddress) {
+        try {
+            NFT nft = getNFT(nftHash);
+            if (nft == null) return null;
+            HashIndex index = (HashIndex) new FileHandler().readObject(this.session.getPath() + "/contracts/nfts/" + nft.getHash() + "/hashIndex");
+            if (index == null) return null;
+            String previousHash = index.getHashes().get(index.getHashes().size()-1).hash;
+            NFTTransfer transfer = new NFTTransfer(saleTransaction, previousHash, nft.getHash(), transferToAddress, this.getKey().getKey());
+            return transfer;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public Bid createBid(NFT nft, float amount, float fee) throws Exception {
+        String address = session.getBlockFileHandler().getNFTOwner(nft.getHash());
+        Transaction txn = createTransaction(new TransactionOutput(address,amount).toList(),fee);
+        Bid bid = new Bid(nft.getHash(),txn,this.getKey());
+        return bid;
+    }
+    
+    public HashMap<String,Integer> listBidsByNFT() throws IOException {
+        HashMap<String,Integer> returnMap = new HashMap<String,Integer>();
+        ArrayList<NFT> nfts = session.getBlockFileHandler().getWalletNFTs(this.address);
+        nfts.forEach(nft -> {
+            returnMap.put(nft.getHash(), getBidCount(nft.getHash()));
+        });
+        return returnMap;
+    }
+    
+    public ArrayList<Bid> getBids(String nftHash) {
+        ArrayList<Bid> returnBids = new ArrayList<Bid>();
+        File f = new File(session.getPath() + "/wallets/" + this.name + "/contracts/listNFTs/" + nftHash + "/bids");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) return new ArrayList<Bid>();
+        for (File file : files) {
+            returnBids.add(getBid(file.getPath()));
+        }
+        return returnBids;
+    } 
+    
+    public Integer getBidCount(String nftHash) {
+        ArrayList<Bid> returnBids = new ArrayList<Bid>();
+        File f = new File(session.getPath() + "/wallets/" + this.name + "/contracts/listNFTs/" + nftHash + "/bids");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) return 0;
+        return files.length;
+    }
+    
+    public Bid getBid(String path) {
+        try {
+            Bid bid = (Bid) new FileHandler().readObject(path);
+            return bid;
+        } catch (Exception e) {}
+        return null;
     }
     
     public ArrayList<UTXO> getUTXOInputs(float value) throws IOException, FileNotFoundException, ClassNotFoundException {

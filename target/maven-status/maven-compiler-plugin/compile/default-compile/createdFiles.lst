@@ -10,7 +10,9 @@ com/pfinance/p2pcomm/Blockchain/BlockValidation.class
 com/pfinance/p2pcomm/Statistics/Statistics$1.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$7.class
 com/pfinance/p2pcomm/Contracts/BorrowContract.class
+com/pfinance/p2pcomm/Transaction/Bid.class
 com/pfinance/p2pcomm/Websocket/IndexServlet.class
+com/pfinance/p2pcomm/Contracts/EndLendContract.class
 com/pfinance/p2pcomm/Websocket/PeerServlet.class
 com/pfinance/p2pcomm/Wallet/Wallet$1.class
 com/pfinance/p2pcomm/Session.class
@@ -22,6 +24,7 @@ com/pfinance/p2pcomm/Websocket/CreateWalletServlet.class
 com/pfinance/p2pcomm/P2P/Peer/PeerThread.class
 com/pfinance/p2pcomm/Wallet/Wallet$4.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$6.class
+com/pfinance/p2pcomm/Wallet/Wallet$8.class
 com/pfinance/p2pcomm/Contracts/LendContract.class
 com/pfinance/p2pcomm/Statistics/Statistics.class
 com/pfinance/p2pcomm/P2P/Peer/PeerMessageHandler.class
@@ -32,11 +35,13 @@ com/pfinance/p2pcomm/Wallet/Wallet$3.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$13.class
 com/pfinance/p2pcomm/P2P/Server/ServerThread.class
 com/pfinance/p2pcomm/Transaction/TransactionInput.class
+com/pfinance/p2pcomm/Wallet/Wallet$9.class
 com/pfinance/p2pcomm/Websocket/MainServlet.class
 com/pfinance/p2pcomm/FileHandler/FileHandler.class
 com/pfinance/p2pcomm/Blockchain/Blockchain.class
 com/pfinance/p2pcomm/Main.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$14.class
+com/pfinance/p2pcomm/Contracts/ListNFT.class
 com/pfinance/p2pcomm/FileHandler/HashIndex.class
 com/pfinance/p2pcomm/Wallet/Wallet$2.class
 com/pfinance/p2pcomm/Websocket/WebSocketEndpoint.class
@@ -44,6 +49,7 @@ com/pfinance/p2pcomm/Wallet/Key.class
 com/pfinance/p2pcomm/Wallet/Wallet$5.class
 com/pfinance/p2pcomm/Voting/SignedVote.class
 com/pfinance/p2pcomm/Websocket/ImportWalletServlet.class
+com/pfinance/p2pcomm/Wallet/Wallet$7.class
 com/pfinance/p2pcomm/Miner/Miner$2.class
 com/pfinance/p2pcomm/Websocket/WalletCreatedServlet.class
 com/pfinance/p2pcomm/Messaging/Message.class
@@ -62,6 +68,7 @@ com/pfinance/p2pcomm/Blockchain/BlockFiles$9.class
 com/pfinance/p2pcomm/Voting/VoteType.class
 com/pfinance/p2pcomm/FileHandler/Validator.class
 com/pfinance/p2pcomm/Websocket/EmbeddedJspStarter.class
+com/pfinance/p2pcomm/Blockchain/BlockFiles$15.class
 com/pfinance/p2pcomm/Transaction/Penalty.class
 com/pfinance/p2pcomm/Websocket/SendTransactionServlet.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles.class
@@ -72,6 +79,7 @@ com/pfinance/p2pcomm/Transaction/Transaction.class
 com/pfinance/p2pcomm/Contracts/NFTTransfer.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$2.class
 com/pfinance/p2pcomm/Websocket/SelectWalletServlet.class
+com/pfinance/p2pcomm/Blockchain/BlockFiles$16.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$8.class
 com/pfinance/p2pcomm/FileHandler/HashEntry.class
 com/pfinance/p2pcomm/FileHandler/ValidatorIndex.class

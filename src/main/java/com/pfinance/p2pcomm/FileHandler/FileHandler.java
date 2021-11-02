@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -71,6 +72,10 @@ public class FileHandler {
             File f = new File(path);
             boolean result = f.delete();
         } catch (Exception e) {}
+    }
+    
+    public void deleteFolder(String path) throws IOException {
+        FileUtils.forceDelete(new File(path));
     }
     
 }

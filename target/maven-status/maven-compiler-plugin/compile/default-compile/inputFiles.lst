@@ -9,6 +9,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Miner/Miner.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/Transaction.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WebSocketEndpoint.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/ListNFT.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Messaging/Message.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/StakeContract.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/IndexServlet.java
@@ -27,10 +28,12 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/TransactionInput.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/SelectWalletServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/FileHandler/ValidatorIndex.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/Bid.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Statistics/TransactionInOut.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Statistics/Statistics.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/LoadFolderServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WebServer.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/EndLendContract.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Blockchain/BlockFiles.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/FileHandler/HashEntry.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/FileHandler/FileHandler.java

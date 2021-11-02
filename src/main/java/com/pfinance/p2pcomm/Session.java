@@ -86,12 +86,12 @@ public class Session {
     }
     
     public void connectPeer() throws UnknownHostException, Exception {
-        System.out.println("Local Hostname: " + InetAddress.getLocalHost().getHostName());
+        System.out.println("Local Host: " + InetAddress.getLocalHost().getHostAddress());
         peer = new Peer(this);
         System.out.println("Address?");
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         String address = bufferedReader.readLine().toLowerCase();
-        if ("".equals(address)) address = InetAddress.getLocalHost().getHostName();
+        if ("".equals(address)) address = InetAddress.getLocalHost().getHostAddress();
         System.out.println("Port?");
         bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         String port = bufferedReader.readLine().toLowerCase();

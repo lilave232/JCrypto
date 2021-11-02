@@ -16,6 +16,7 @@ import java.math.BigInteger;
  * @author averypozzobon
  */
 public class TransactionInput implements Serializable {
+    private static final long serialVersionUID = -1087045000118285808L;
     public String previousTxnHash = null;
     public Integer outputIndex = null;
     public byte[] outputSignature = null;
@@ -26,6 +27,10 @@ public class TransactionInput implements Serializable {
         this.outputIndex = index;
         this.outputSignature = signature;
         this.key = key;
+    }
+    
+    public void removeSignature() {
+        outputSignature = null;
     }
     
     public BigInteger getKey() {return this.key;}

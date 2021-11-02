@@ -16,6 +16,7 @@ import java.util.ArrayList;
  * @author averypozzobon
  */
 public class HashIndex implements Serializable {
+    private static final long serialVersionUID = -8932099700769061961L;
     private ArrayList<HashEntry> hashes = new ArrayList<>();
     
     public ArrayList<HashEntry> getHashes() {return hashes;}
@@ -27,6 +28,19 @@ public class HashIndex implements Serializable {
     public void addHash(HashEntry entry) {
         hashes.add(entry);
     }
+    
+    public void removeHash(Integer index) {
+        hashes.remove(hashes.get(index));
+    }
+    
+    public void removeHash(HashEntry entry) {
+        hashes.remove(entry);
+    }
+    
+    public void removeAllHashes(ArrayList<HashEntry> entry) {
+        hashes.removeAll(entry);
+    }
+    
     public byte[] toBytes() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 

@@ -6,6 +6,7 @@
 package com.pfinance.p2pcomm.Contracts;
 
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
+import com.pfinance.p2pcomm.Transaction.Bid;
 import com.pfinance.p2pcomm.Transaction.Transaction;
 import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import java.io.ByteArrayOutputStream;
@@ -25,6 +26,7 @@ public class NFTTransfer implements Serializable {
     private static final long serialVersionUID = 6459378639014298908L;
     private String transferDate = null;
     private Transaction saleTransaction = null;
+    private Bid bidTransaction = null;
     private String nftHash = null;
     private String previousHash = null;
     private String hash = null;
@@ -32,14 +34,22 @@ public class NFTTransfer implements Serializable {
     private byte[] signature = null;
     private BigInteger key = null;
     
-    public NFTTransfer(Transaction saleTransaction, String previousHash, String nftHash, String transferToAddress, ECKeyPair key) {
+    public NFTTransfer(Object saleTransaction, String previousHash, String nftHash, String transferToAddress, ECKeyPair key) {
         String time = Long.toString(System.currentTimeMillis());
         this.transferDate = time;
-        this.saleTransaction = saleTransaction;
+        String saleTransactionHash = "";
+        if (saleTransaction instanceof Transaction) {
+            this.saleTransaction = (Transaction) saleTransaction;
+            saleTransactionHash = this.saleTransaction.getHash();
+        }
+        if (saleTransaction instanceof Bid) {
+            this.bidTransaction = (Bid) saleTransaction;
+            saleTransactionHash = this.bidTransaction.getHash();
+        }
         this.nftHash = nftHash;
         this.previousHash = previousHash;
         this.transferToAddress = transferToAddress;
-        this.hash = DigestUtils.sha256Hex(this.transferDate + this.nftHash + this.previousHash + this.transferToAddress + this.saleTransaction.getHash());
+        this.hash = DigestUtils.sha256Hex(this.transferDate + this.nftHash + this.previousHash + this.transferToAddress + saleTransactionHash);
         this.key = key.getPublicKey();
         try {
             this.signature = Cryptography.sign(this.hash.getBytes(),key);
@@ -54,6 +64,7 @@ public class NFTTransfer implements Serializable {
     public String getPreviousHash() {return this.previousHash;}
     public String getTransferAddress() {return this.transferToAddress;}
     public Transaction getSaleTransaction() { return this.saleTransaction; }
+    public Bid getBidTransaction() {return this.bidTransaction;}
     
     public String toString() {
         StringBuffer returnString = new StringBuffer();
@@ -65,7 +76,8 @@ public class NFTTransfer implements Serializable {
         returnString.append(String.format("|%-131s|\n", "Transfer To: " + this.transferToAddress));
         returnString.append(String.format("|%-131s|\n", "Signature: " + this.signature));
         returnString.append(String.format("|%-131s|\n", "Sale Transaction").replace(' ', '-'));
-        returnString.append(this.saleTransaction.toString());
+        if (this.saleTransaction != null) returnString.append(this.saleTransaction.toString());
+        if (this.bidTransaction != null) returnString.append(this.bidTransaction.toString());
         returnString.append(String.format("|%-131s|\n", "End Sale Transaction").replace(' ', '-'));
         returnString.append(String.format("|%-131s|\n", "End NFT Transfer").replace(' ', '-'));
         return returnString.toString();

@@ -25,7 +25,12 @@ public class TransactionOutput implements Serializable {
     
     public String toString() {
         StringBuffer returnString = new StringBuffer();
-        returnString.append(String.format("|%-32s|", this.address.substring(0, 32)));
+        if (this.address.length() > 32) {
+            returnString.append(String.format("|%-32s|", this.address.substring(0, 32)));
+        } else {
+            returnString.append(String.format("|%-32s|", this.address));
+        }
+        
         returnString.append(String.format("%-32s|", this.value));
         returnString.append(String.format("%-32s|", ""));
         returnString.append(String.format("%-32s|", ""));

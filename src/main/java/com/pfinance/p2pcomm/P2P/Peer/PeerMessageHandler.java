@@ -6,6 +6,7 @@
 package com.pfinance.p2pcomm.P2P.Peer;
 
 import com.pfinance.p2pcomm.Blockchain.Block;
+import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.FileHandler.HashIndex;
 import static com.pfinance.p2pcomm.Main.prompt;
 import static com.pfinance.p2pcomm.Main.session;
@@ -32,7 +33,7 @@ import org.apache.commons.text.StringEscapeUtils;
  */
 public class PeerMessageHandler {
     Peer peer = null;
-    private ArrayList<String> blocksRequested = new ArrayList<String>();
+    public ArrayList<String> blocksRequested = new ArrayList<String>();
     
     public boolean isRequested(String hash) {return blocksRequested.contains(hash);}
    
@@ -92,7 +93,7 @@ public class PeerMessageHandler {
                     }
                 }
                 case Message.BROADCASTTXNPENDING -> {
-                    synchronized(this) {
+                    synchronized(this.peer.getSession()) {
                         byte[] object = DatatypeConverter.parseBase64Binary(data.getString("data"));
                         ByteArrayInputStream in = new ByteArrayInputStream(object);
                         ObjectInputStream is = new ObjectInputStream(in);
