@@ -155,9 +155,9 @@ public class IndexServlet extends HttpServlet {
             
             returnValue += "\"UTXOS\":[";
             for (int i = 0; i < utxos.size(); i++) {
-                returnValue += "{\"address\":\"" + utxos.get(i).getAddress() + "\""
+                returnValue += "{\"address\":\"" + utxos.get(i).getPreviousHash() + "\""
                                             + ",\"index\":" + utxos.get(i).getIndex()
-                                            + ",\"amount\":\"" + utxos.get(i).toFloat()
+                                            + ",\"amount\":" + utxos.get(i).toFloat()
                                             + "}";
                 if (i < utxos.size()-1) {
                     returnValue += ",";
