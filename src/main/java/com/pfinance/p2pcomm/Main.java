@@ -68,22 +68,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        try {
-            byte[] seed = new KeyGenerator().getMaster("soap point also mobile village session angry apple crawl reason success baby");
-            ECKeyPair pair = new KeyDerivation().deriveKeyPath("m/\'",seed);
-            String address = DigestUtils.sha256Hex(pair.getPublicKey().toByteArray());
-            System.out.println(address);
-            // TODO code application logic here
-            //prompt();
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeySpecException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        prompt();
     }
     
     public static void prompt() {
