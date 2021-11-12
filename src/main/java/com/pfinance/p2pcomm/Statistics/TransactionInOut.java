@@ -19,14 +19,12 @@ public class TransactionInOut {
     private String hash;
     private Integer output;
     private float amount;
-    private UTXO utxo;
     private int type; //0 = in, 1 = out;
     
-    public TransactionInOut(Long date, String hash, Integer output, UTXO utxo, float amount) {
+    public TransactionInOut(Long date, String hash, Integer output, float amount) {
         this.date = date;
         this.hash = hash;
         this.output = output;
-        this.utxo = utxo;
         
         this.amount = amount;
         if (this.amount >= 0) {
@@ -67,10 +65,6 @@ public class TransactionInOut {
     
     public Integer getOutput() {
         return this.output;
-    }
-    
-    public UTXO getUTXO() {
-        return this.utxo;
     }
     
     public void addAmount(float amount) {

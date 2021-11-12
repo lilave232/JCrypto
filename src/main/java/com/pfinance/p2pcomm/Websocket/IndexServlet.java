@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -29,6 +30,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.web3j.crypto.ECDSASignature;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Sign;
@@ -82,9 +84,10 @@ public class IndexServlet extends HttpServlet {
         */
     }
     
-    public float getUsableBalance(String address) {
+    public AbstractMap.SimpleEntry<ArrayList<UTXO>,Float> getUsableBalance(String address) {
         try {
             float usableBalance = 0;
+            ArrayList<UTXO> utxos = new ArrayList<UTXO>();
             File f = new File(session.getPath() + "/utxos/");
             File[] files = f.listFiles(new FileFilter() {
                 @Override
@@ -97,14 +100,16 @@ public class IndexServlet extends HttpServlet {
                     UTXO utxo = session.getBlockFileHandler().loadUTXO(file.getPath());
                     if (utxo.getAddress().equals(address)) {
                         if (!session.getBlockchain().getPendingUTXOs().contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) {
-                            usableBalance += session.getBlockFileHandler().loadUTXO(file.getPath()).toFloat();
+                            usableBalance += utxo.toFloat();
+                            utxos.add(utxo);
                         }
                     }   
                 }
             }
-            return usableBalance; 
+            
+            return new AbstractMap.SimpleEntry<>(utxos, usableBalance);
         } catch (Exception e) {
-            return 0;
+            return new AbstractMap.SimpleEntry<>(new ArrayList<UTXO>(), (float)0);
         }
         
     }
@@ -125,7 +130,9 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-            float balance = getUsableBalance(request.getParameter("address"));
+            AbstractMap.SimpleEntry<ArrayList<UTXO>,Float> usableBalance = getUsableBalance(request.getParameter("address"));
+            float balance = usableBalance.getValue();
+            ArrayList<UTXO> utxos = usableBalance.getKey();
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             String returnValue = "";
@@ -136,7 +143,6 @@ public class IndexServlet extends HttpServlet {
             for (int i = 0; i < transactions.size(); i++) {
                 returnValue += "{\"date_string\":\"" + transactions.get(i).getDateToString() + "\""
                                             + ",\"type\":" + transactions.get(i).getType()
-                                            + ",\"previous_hash\":\"" + transactions.get(i).getUTXO().getPreviousHash() +"\""
                                             + ",\"hash\":\"" + transactions.get(i).getHash() + "\""
                                             + ",\"output\":" + transactions.get(i).getOutput()
                                             + ",\"amount\":" + transactions.get(i).getAmount()
@@ -144,8 +150,20 @@ public class IndexServlet extends HttpServlet {
                 if (i < transactions.size()-1) {
                     returnValue += ",";
                 }
-                
             }
+            returnValue += "],";
+            
+            returnValue += "\"UTXOS\":[";
+            for (int i = 0; i < utxos.size(); i++) {
+                returnValue += "{\"address\":\"" + utxos.get(i).getAddress() + "\""
+                                            + ",\"index\":" + utxos.get(i).getIndex()
+                                            + ",\"amount\":\"" + utxos.get(i).toFloat()
+                                            + "}";
+                if (i < utxos.size()-1) {
+                    returnValue += ",";
+                }
+            }
+            
             returnValue += "]}";
             response.getWriter().print(returnValue);
             response.setStatus(HttpServletResponse.SC_OK);

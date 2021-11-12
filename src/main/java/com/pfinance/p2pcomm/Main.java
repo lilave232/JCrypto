@@ -25,6 +25,7 @@ import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import com.pfinance.p2pcomm.Voting.SignedVote;
 import com.pfinance.p2pcomm.Voting.VoteResult;
 import com.pfinance.p2pcomm.Voting.VoteType;
+import com.pfinance.p2pcomm.Wallet.KeyDerivation;
 import com.pfinance.p2pcomm.Wallet.Wallet;
 import com.pfinance.p2pcomm.Websocket.WebServer;
 import java.io.BufferedReader;
@@ -49,6 +50,13 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Sign;
+import com.pfinance.p2pcomm.Wallet.KeyGenerator;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,8 +68,22 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
-        prompt();
+        try {
+            byte[] seed = new KeyGenerator().getMaster("soap point also mobile village session angry apple crawl reason success baby");
+            ECKeyPair pair = new KeyDerivation().deriveKeyPath("m/\'",seed);
+            String address = DigestUtils.sha256Hex(pair.getPublicKey().toByteArray());
+            System.out.println(address);
+            // TODO code application logic here
+            //prompt();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public static void prompt() {
