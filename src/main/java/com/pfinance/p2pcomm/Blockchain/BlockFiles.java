@@ -363,11 +363,14 @@ public class BlockFiles {
     public void deleteUTXO(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         FileHandler handler = new FileHandler();
         for (TransactionInput input : transaction.getInputs()) {
+            Files.createDirectories(Paths.get(session.getPath() + "/used_utxos/"));
             UTXO utxo = this.loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (session.getBlockchain().getPendingUTXOs().contains(utxo.getPreviousHash() + "|" + utxo.getIndex()))
                 session.getBlockchain().getPendingUTXOs().remove(utxo.getPreviousHash() + "|" + utxo.getIndex());
             File f = new File(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             handler.deleteFile(f.getPath());
+            utxo.setOut(transaction.getTimestamp(), transaction.getHash());
+            handler.writeObject(session.getPath() + "/used_utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex), utxo);
             if (this.walletAddresses.contains(utxo.getAddress())) {
                 String path = this.getWalletPath(utxo.getAddress());
                 Files.createDirectories(Paths.get(path + "/used_utxos/"));

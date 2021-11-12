@@ -39,12 +39,16 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Sign;
 
 /**
  *
@@ -57,17 +61,7 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        //Miner miner = new Miner(session);
-        //miner.startMiner();
-        try {
-            try {
-                WebServer webserver = new WebServer(session);
-                //webserver.start();
-            } catch (Exception e) {}
-            prompt();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        prompt();
     }
     
     public static void prompt() {
@@ -83,10 +77,6 @@ public class Main {
     public static void mainMenu() throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         Wallet activeWallet = session.getWallet();
         session.updateWallet();
-        //String hash = session.getBlockchain().getHashIndex().getHashes().get(session.getBlockchain().getHashIndex().getHashes().size()-1).hash;
-        //Block b = session.getBlockFileHandler().getBlock(hash);
-        //System.out.println(b);
-        //System.out.println(session.getBlockchain().getHashIndex().getHashes().get(session.getBlockchain().getHashIndex().getHashes().size()-1).hash);
         System.out.println("Active Wallet: " + activeWallet.getName());
         System.out.println("Options: ");
         System.out.println("[0]Change Wallet");
@@ -109,6 +99,7 @@ public class Main {
         if (session.getPeer() != null) System.out.println("[17]Bid on NFT");
         if (session.getPeer() != null) System.out.println("[18]Show Bids");
         if (session.getPeer() != null) System.out.println("[19]Accept Bid and Transfer");
+        if (session.getPeer() != null) System.out.println("[20]Run Webserver");
         
         System.out.println("[E]Exit");
         System.out.println("Selection?");
@@ -304,10 +295,14 @@ public class Main {
                 else {System.out.println("Transaction Failed");} 
             }
         }
-        else if (response.equals("19")) {System.out.println(session.getValidators());}
-        else if (response.equals("20")) {System.out.println(session.getBlockchain().block);}
-        else if (response.equals("21")) {System.out.println(session.getScheduler());}
-        else if (response.equals("22")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
+        else if (response.equals("20") && session.getPeer() != null) {
+            WebServer webserver = new WebServer(session);
+            webserver.start();
+        }
+        else if (response.equals("21")) {System.out.println(session.getValidators());}
+        else if (response.equals("22")) {System.out.println(session.getBlockchain().block);}
+        else if (response.equals("23")) {System.out.println(session.getScheduler());}
+        else if (response.equals("24")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
         else if (response.equals("e")) {System.exit(0);}
     }
     

@@ -20,6 +20,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Sign;
@@ -56,6 +57,7 @@ public class Cryptography {
         BigInteger pubKeyRecovered;
         try {
             pubKeyRecovered = Sign.signedMessageToKey(msg, signed);
+            //System.out.println("Recovered: " + Hex.toHexString(pubKeyRecovered.toByteArray()));
             boolean validSig = pubKey.equals(pubKeyRecovered);
             return validSig;
         } catch (Exception e) {

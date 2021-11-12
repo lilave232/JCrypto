@@ -5,7 +5,9 @@
  */
 package com.pfinance.p2pcomm.Websocket;
 
+import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Session;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
 import java.awt.Desktop;
 import java.io.File;
@@ -16,6 +18,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,13 +41,14 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.ServletMapping;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 /**
  *
  * @author averypozzobon
@@ -54,11 +60,20 @@ public class WebServer extends Thread {
     
     public WebServer(Session session) {
         this.session = session;
+        /*
+        try {
+            this.session.setPath("First");
+        } catch (IOException ex) {
+            Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
     }
     
     public void run() {
         try {
-
+            
             server = new Server();
                 // Define ServerConnector
             ServerConnector connector = new ServerConnector(server);
@@ -73,6 +88,12 @@ public class WebServer extends Thread {
             //servletContextHandler.setResourceBase(baseUri.toASCIIString());
             servletContextHandler.setResourceBase(System.getProperty("user.dir") + "/src/main/resources/webroot/");
 
+            FilterHolder cors = servletContextHandler.addFilter(CrossOriginFilter.class,"/*",EnumSet.of(DispatcherType.REQUEST));
+            cors.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
+            cors.setInitParameter(CrossOriginFilter.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, "*");
+            cors.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,POST,HEAD");
+            cors.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin");
+                
             // Since this is a ServletContextHandler we must manually configure JSP support.
             this.enableEmbeddedJspSupport(servletContextHandler);
             
@@ -146,11 +167,11 @@ public class WebServer extends Thread {
             // Start Server
             // server.setDumpAfterStart(true);
             server.start();
-            if(Desktop.isDesktopSupported()) {
-                String s = "http://localhost:8080";
-                Desktop desktop = Desktop.getDesktop();
-                desktop.browse(URI.create(s));
-            }
+            //if(Desktop.isDesktopSupported()) {
+                //String s = "http://localhost:8080";
+                //Desktop desktop = Desktop.getDesktop();
+                //desktop.browse(URI.create(s));
+            //}
             
         
         } catch (Exception ex) {

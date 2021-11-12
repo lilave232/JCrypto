@@ -26,12 +26,54 @@ public class Statistics {
         this.session = session;
     }
     
+    public ArrayList<TransactionInOut> getWalletInOuts(String address) {
+        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+        localInOuts.addAll(getTransactionsOut(address));
+        localInOuts.addAll(getTransactionsIn(address));
+        localInOuts.sort((a,b) -> Long.compare(b.getDate(), a.getDate()));
+        return localInOuts;
+    }
+    
     public ArrayList<TransactionInOut> getWalletInOuts() {
         this.walletInOuts.clear();
         getTransactionsOut();
         getTransactionsIn();
         walletInOuts.sort((a,b) -> Long.compare(b.getDate(), a.getDate()));
         return walletInOuts;
+    }
+    
+    public ArrayList<TransactionInOut> getTransactionsOut(String address) {
+        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+        File f = new File(session.getPath() + "/used_utxos/");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) return new ArrayList<>();
+        for (int x = 0; x < files.length; x++) {
+            FileHandler handler = new FileHandler();
+            try {
+               UTXO utxo = (UTXO) handler.readObject(files[x].getPath());
+               if (utxo != null) {
+                    if (!utxo.getAddress().equals(address)) continue;
+                    TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo,utxo.toFloat());
+                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),utxo,-utxo.toFloat());
+                   if (localInOuts.contains(txn_in)) {
+                       localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
+                   } else {
+                       localInOuts.add(txn_in);
+                   }
+                   if (localInOuts.contains(txn_out)) {
+                       localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                   } else {
+                       localInOuts.add(txn_out);
+                   }
+               }
+            } catch (Exception e) {}
+        }
+        return localInOuts;
     }
     
     public void getTransactionsOut() {
@@ -48,8 +90,8 @@ public class Statistics {
             try {
                UTXO utxo = (UTXO) handler.readObject(files[x].getPath());
                if (utxo != null) {
-                    TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.toFloat());
-                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),-utxo.toFloat());
+                    TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo,utxo.toFloat());
+                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),utxo,-utxo.toFloat());
                    if (walletInOuts.contains(txn_in)) {
                        walletInOuts.get(walletInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
                    } else {
@@ -79,7 +121,7 @@ public class Statistics {
             try {
                UTXO utxo = (UTXO) handler.readObject(files[x].getPath());
                if (utxo != null) {
-                   TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.toFloat());
+                   TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo,utxo.toFloat());
                    if (walletInOuts.contains(txn_in)) {
                        walletInOuts.get(walletInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
                    } else {
@@ -89,4 +131,33 @@ public class Statistics {
             } catch (Exception e) {}
         }
     }
+        
+    public ArrayList<TransactionInOut> getTransactionsIn(String address) {
+        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+        File f = new File(session.getPath() + "/utxos/");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) new ArrayList<>();
+        for (int x = 0; x < files.length; x++) {
+            FileHandler handler = new FileHandler();
+            try {
+               UTXO utxo = (UTXO) handler.readObject(files[x].getPath());
+               if (utxo != null) {
+                   if (!utxo.getAddress().equals(address)) continue;
+                   TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo,utxo.toFloat());
+                   if (localInOuts.contains(txn_in)) {
+                       localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
+                   } else {
+                       localInOuts.add(txn_in);
+                   }
+               }
+            } catch (Exception e) {}
+        }
+        return localInOuts;
+    }
+    
 }

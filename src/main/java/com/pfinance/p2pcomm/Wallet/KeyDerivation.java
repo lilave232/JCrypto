@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Hex;
 import org.spongycastle.asn1.x9.X9ECParameters;
 import org.spongycastle.crypto.ec.CustomNamedCurves;
 import org.spongycastle.math.ec.ECPoint;
@@ -85,8 +86,11 @@ public class KeyDerivation {
         byte[] masterKey = Arrays.copyOf(parent, 32);
         byte[] chainCode = new byte[parent.length - 32];
         System.arraycopy(parent, 32, chainCode, 0, chainCode.length);
+        //System.out.println(new BigInteger(1,masterKey));
+        //System.out.println(new BigInteger(1,chainCode));
         //APPEND 0 to BEGINNING OF MASTER KEY
         byte[] privKey = new byte[37];
+        
         if (hard) {
             byte[] zero = new byte[1];
             zero[0] = 0;
@@ -98,6 +102,7 @@ public class KeyDerivation {
         privKey[34] = (byte) (childIndex >> 16);
         privKey[35] = (byte) (childIndex >> 8);
         privKey[36] = (byte) (childIndex);
+        //System.out.println(new BigInteger(privKey));
         //HMAC CHAIN CODE WITH PRIVATE KEY
         SecretKeySpec keySpec = new SecretKeySpec(chainCode, "HmacSHA512");
         Mac hmacSha512 = Mac.getInstance("HmacSHA512");
@@ -106,8 +111,14 @@ public class KeyDerivation {
         //GET CHILD KEY and CHAIN CODE FROM FIRST 32 and last 32 bytes
         Arrays.fill(privKey, (byte) 0);
         final byte[] ChildKey = Arrays.copyOf(I, 32);
-        byte[] ChildChainCode = new byte[ChildKey.length - 32];
+        
+        //System.out.println(new BigInteger(1,ChildKey));
+        
+        byte[] ChildChainCode = new byte[I.length - 32];
+        
         System.arraycopy(I, 32, ChildChainCode, 0, ChildChainCode.length);
+        
+        //System.out.println(new BigInteger(1,ChildChainCode));
         //Take ChildKey Add Parent Key Modulo N From Curve
         byte[] key = masterKey;
         BigInteger parse256_ChildKey = new BigInteger(1, ChildKey);
@@ -121,8 +132,19 @@ public class KeyDerivation {
         Arrays.fill(ChildKey, (byte) 0);
         if (modArr.length < ChildKey.length) {System.arraycopy(modArr, 0, ChildKey, ChildKey.length - modArr.length, modArr.length);} 
         else { System.arraycopy(modArr, modArr.length - ChildKey.length, ChildKey, 0, ChildKey.length);}
+        
+        //System.out.println(new BigInteger(1,modArr));
+        
         Arrays.fill(modArr, (byte) 0);
+        
+        //System.out.println(new BigInteger(1,ChildKey));
+        
         keyPair = ECKeyPair.create(ChildKey);
+        
+        //System.out.println(keyPair.getPrivateKey());
+        
+        //System.out.println(keyPair.getPublicKey());
+        
         return keyPair;
     }
 }

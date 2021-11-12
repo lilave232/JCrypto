@@ -41,12 +41,17 @@ public class MainServlet extends HttpServlet {
             } catch (Exception ex) {
                 Logger.getLogger(MainServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
-            request.setAttribute("pathName", session.getPath());
-            request.setAttribute("wallet", session.getWallet());
-            request.setAttribute("transactions", session.getStats().getWalletInOuts());
-            try {
-                request.getRequestDispatcher("/html/main.jsp").forward(request,response);
-            } catch (IllegalStateException ex) {}
+            //request.setAttribute("pathName", session.getPath());
+            //request.setAttribute("wallet", session.getWallet());
+            //request.setAttribute("transactions", session.getStats().getWalletInOuts());
+            //try {
+            //    request.getRequestDispatcher("/html/main.jsp").forward(request,response);
+            //} catch (IllegalStateException ex) {}
+            //response.setContentType("application/json");
+            //response.setCharacterEncoding("UTF-8");
+            //response.getWriter().print("{ \"my_data\": \"Hello from Java!\" }");
+            //response.setStatus(HttpServletResponse.SC_OK);
+            //response.getWriter().close();
         }
         
     }

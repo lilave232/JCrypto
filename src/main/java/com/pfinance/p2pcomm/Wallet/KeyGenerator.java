@@ -116,7 +116,11 @@ public class KeyGenerator {
     
     public Key generate(byte[] seed) throws Exception {
         ECKeyPair pair = new KeyDerivation().deriveKeyPath("m/\'",seed);
+        //System.out.println(pair.getPrivateKey());
+        //System.out.println(pair.getPublicKey());
+        //System.out.println(Hex.encodeHexString(pair.getPublicKey().toByteArray()));
         String address = DigestUtils.sha256Hex(pair.getPublicKey().toByteArray());
+        //System.out.println(address);
         Key key = new Key(pair,address);
         return key;
     }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -74,6 +75,7 @@ public class Wallet {
                 System.out.println("Mnemonic is: " + mnemonic);
                 System.out.println("Remember to securely store your mnemonic offline!");
                 this.seed = generator.getMaster(mnemonic);
+                //System.out.println(new BigInteger(1,this.seed));
                 this.address = generator.generate(this.seed).getAddress();
                 saveWallet(name, pwd);
             } catch (Exception e) {
