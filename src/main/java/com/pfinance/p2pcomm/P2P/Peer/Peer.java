@@ -90,6 +90,16 @@ public class Peer {
         }
     }
     
+    public void addPeerListener(String address, String port) throws IOException {
+        Socket socket = null;
+        try {
+            addListener(address,port);
+        } catch (Exception e) {
+            if (socket != null) socket.close();
+            else System.out.println("invalid input. skipping to next step.");
+        }
+    }
+    
     public synchronized void addListener(String address, String port) throws Exception {
         Socket socket = null;
         try {

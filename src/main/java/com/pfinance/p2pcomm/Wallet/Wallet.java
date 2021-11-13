@@ -199,6 +199,14 @@ public class Wallet {
     
     public StakeContract getStakeContract() {return this.stakeContract;}
     
+    public Key getKey(String pwd) throws Exception {
+        if (seed == null) {
+            loadKey(pwd);
+        }
+        KeyGenerator generator = new KeyGenerator();
+        return generator.generate(this.seed);
+    }
+    
     public Key getKey() throws Exception {
         if (seed == null) {
             System.out.println("Enter Password?");

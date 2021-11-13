@@ -72,6 +72,10 @@ public class PeerMessageHandler {
                                 this.blocksRequested.add(incoming.getHashes().get(i).hash);
                             }
                         }
+                        if (this.blocksRequested.isEmpty()) {
+                            System.out.println("Chain Up to Date!");
+                            this.peer.getSession().setChainDownloaded(true);
+                        }
                     }
                     
                 }
@@ -88,6 +92,7 @@ public class PeerMessageHandler {
                         this.blocksRequested.remove(block.getHash());
                         if (this.blocksRequested.isEmpty()) {
                             System.out.println("Chain Downloaded!!");
+                            this.peer.getSession().setChainDownloaded(true);
                         }
                         
                     }

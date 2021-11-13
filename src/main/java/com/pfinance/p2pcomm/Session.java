@@ -56,6 +56,7 @@ public class Session {
     private Scheduler scheduler = new Scheduler(this);
     private Boolean validation = false;
     private Miner miner = new Miner(this);
+    private boolean chainDownloaded = false;
     
     public Session() {
         
@@ -196,4 +197,6 @@ public class Session {
     
     public Scheduler getScheduler() {return this.scheduler;}
     public Miner getMiner() {return this.miner;}
+    public void setChainDownloaded(boolean downloaded) {this.chainDownloaded = downloaded;}
+    public boolean getChainDownloaded() {return this.chainDownloaded;}
 }

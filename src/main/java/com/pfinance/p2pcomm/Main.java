@@ -68,7 +68,171 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        prompt();
+        try {
+            if (args.length == 0) {
+                prompt();
+            }
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+            if (args.length == 2) {
+                if ("create".equals(args[0])) {
+                    session.setPath(args[1]);
+                }
+            } 
+            if (args.length == 4) {
+                if ("create".equals(args[1])) {
+                    session.setPath(args[0]);
+                    session.setWallet((Wallet) new Wallet(session).createWallet(args[2], args[3]).get(0));
+                }
+                if ("import".equals(args[1])) {
+                    session.setPath(args[0]);
+                    System.out.println("Wallet Mnemonic?");
+                    String mnemonic = bufferedReader.readLine();
+                    session.setWallet(new Wallet(session).importWallet(args[2], args[3], mnemonic));
+                }
+            }
+            if (args.length == 3) {
+                if ("balance".equals(args[2])) {
+                    session.setPath(args[0]);
+                    session.setWallet(new Wallet(session).loadWallet(args[1]));
+                    System.out.println(session.getWallet().getBalance());
+                }
+                if ("address".equals(args[2])) {
+                    session.setPath(args[0]);
+                    session.setWallet(new Wallet(session).loadWallet(args[1]));
+                    System.out.println(session.getWallet().getAddress());
+                }
+            }
+            if (args.length == 5) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+            }
+            if (args.length == 6) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+                Thread.sleep(1 * 1000);
+                while (!session.getChainDownloaded()) {}
+                
+                if ("mine".equals(args[5])) {
+                    if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                        System.out.println("Mining");
+                        session.setValidation();
+                    } else {
+                        System.out.println("Unable to mine");
+                        System.exit(0);
+                    }
+                }
+                
+                if ("address".equals(args[5])) {
+                    System.out.println(session.getWallet().getAddress());
+                }
+                
+                if ("balance".equals(args[5])) {
+                    System.out.println(session.getWallet().getBalance());
+                }
+                
+                if ("server".equals(args[5])) {
+                    WebServer webserver = new WebServer(session);
+                    webserver.start();
+                }
+                
+            }
+            if (args.length == 7) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+                Thread.sleep(1 * 1000);
+                while (!session.getChainDownloaded()) {}
+                
+                if ("server".equals(args[6])) {
+                    if ("mine".equals(args[5])) {
+                        if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                            System.out.println("Mining");
+                            session.setValidation();
+                            WebServer webserver = new WebServer(session);
+                            webserver.start();
+                        } else {
+                            System.out.println("Unable to mine");
+                            System.exit(0);
+                        }
+                    }
+                } else {
+                    session.getPeer().addListener(args[5], args[6]);
+                }
+                
+            }
+            
+            if (args.length == 8) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+                session.getPeer().addListener(args[5], args[6]);
+                Thread.sleep(1 * 1000);
+                while (!session.getChainDownloaded()) {}
+                
+                if ("mine".equals(args[7])) {
+                    if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                        System.out.println("Mining");
+                        session.setValidation();
+                    } else {
+                        System.out.println("Unable to mine");
+                        System.exit(0);
+                    }
+                }
+                
+                if ("address".equals(args[7])) {
+                    System.out.println(session.getWallet().getAddress());
+                }
+                
+                if ("balance".equals(args[7])) {
+                    System.out.println(session.getWallet().getBalance());
+                }
+            }
+            
+            if (args.length == 9) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+                session.getPeer().addListener(args[5], args[6]);
+                Thread.sleep(1 * 1000);
+                while (!session.getChainDownloaded()) {}
+                
+                if ("mine".equals(args[7])) {
+                    if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                        System.out.println("Mining");
+                        session.setValidation();
+                    } else {
+                        System.out.println("Unable to mine");
+                        System.exit(0);
+                    }
+                }
+                
+                if ("server".equals(args[8])) {
+                    WebServer webserver = new WebServer(session);
+                    webserver.start();
+                }
+                
+                if ("address".equals(args[7])) {
+                    System.out.println(session.getWallet().getAddress());
+                }
+                
+                if ("balance".equals(args[7])) {
+                    System.out.println(session.getWallet().getBalance());
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public static void prompt() {
