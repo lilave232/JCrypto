@@ -89,10 +89,17 @@ public class SendTransactionServlet extends HttpServlet {
             if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
                 boolean result = session.getBlockchain().addData(txn);
                 if (result) {session.getBlockchain().addPendingTxn(txn);System.out.println("Transaction Accepted");} 
-                else {System.out.println("Transaction Failed");} 
+                else {
+                    System.out.println("Transaction Failed");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().close();
+                } 
             }
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().close();
         } catch (Exception e) {
-            
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().close();
         }
     }
     

@@ -114,7 +114,7 @@ public class Main {
                 session.getWallet().getKey(args[2]);
                 session.connectPeer(args[3],args[4]);
                 Thread.sleep(1 * 1000);
-                while (!session.getChainDownloaded()) {}
+                while (!session.getChainDownloaded()) {if (session.getPeer().getPeerThreads().isEmpty()){break;}}
                 
                 if ("mine".equals(args[5])) {
                     if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
@@ -146,7 +146,7 @@ public class Main {
                 session.getWallet().getKey(args[2]);
                 session.connectPeer(args[3],args[4]);
                 Thread.sleep(1 * 1000);
-                while (!session.getChainDownloaded()) {}
+                while (!session.getChainDownloaded()) { if (session.getPeer().getPeerThreads().isEmpty()){break;}}
                 
                 if ("server".equals(args[6])) {
                     if ("mine".equals(args[5])) {
@@ -173,7 +173,7 @@ public class Main {
                 session.connectPeer(args[3],args[4]);
                 session.getPeer().addListener(args[5], args[6]);
                 Thread.sleep(1 * 1000);
-                while (!session.getChainDownloaded()) {}
+                while (!session.getChainDownloaded()) {if (session.getPeer().getPeerThreads().isEmpty()){break;}}
                 
                 if ("mine".equals(args[7])) {
                     if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
