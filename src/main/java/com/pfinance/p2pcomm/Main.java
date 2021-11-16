@@ -21,6 +21,7 @@ import com.pfinance.p2pcomm.Miner.Miner;
 import com.pfinance.p2pcomm.P2P.Peer.Peer;
 import com.pfinance.p2pcomm.Transaction.Bid;
 import com.pfinance.p2pcomm.Transaction.Transaction;
+import com.pfinance.p2pcomm.Transaction.TransactionInput;
 import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import com.pfinance.p2pcomm.Voting.SignedVote;
 import com.pfinance.p2pcomm.Voting.VoteResult;
@@ -70,6 +71,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (args.length == 0) {
+                //System.out.println(new TransactionInput("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",0, new byte[64], BigInteger.ONE).toString());
                 prompt();
             }
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));

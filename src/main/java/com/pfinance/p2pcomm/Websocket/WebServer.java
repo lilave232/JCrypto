@@ -150,6 +150,10 @@ public class WebServer extends Thread {
             servletHolder = new ServletHolder(transferNFTServlet);
             servletContextHandler.addServlet(servletHolder, "/transferNFT");
             
+            GetBorrowersServlet borrowersServlet = new GetBorrowersServlet(this.session);
+            servletHolder = new ServletHolder(borrowersServlet);
+            servletContextHandler.addServlet(servletHolder, "/getBorrowers");
+            
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
             //holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");

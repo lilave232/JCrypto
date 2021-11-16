@@ -9,6 +9,7 @@ com/pfinance/p2pcomm/Blockchain/BlockFiles$4.class
 com/pfinance/p2pcomm/Blockchain/BlockValidation.class
 com/pfinance/p2pcomm/Statistics/Statistics$1.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$7.class
+com/pfinance/p2pcomm/Websocket/GetBorrowersServlet.class
 com/pfinance/p2pcomm/Contracts/BorrowContract.class
 com/pfinance/p2pcomm/Statistics/Statistics$4.class
 com/pfinance/p2pcomm/Transaction/Bid.class
@@ -49,6 +50,7 @@ com/pfinance/p2pcomm/FileHandler/HashIndex.class
 com/pfinance/p2pcomm/Wallet/Wallet$2.class
 com/pfinance/p2pcomm/Websocket/WebSocketEndpoint.class
 com/pfinance/p2pcomm/Wallet/Key.class
+com/pfinance/p2pcomm/Websocket/LendFundsServlet.class
 com/pfinance/p2pcomm/Wallet/Wallet$5.class
 com/pfinance/p2pcomm/Voting/SignedVote.class
 com/pfinance/p2pcomm/Websocket/ImportWalletServlet.class

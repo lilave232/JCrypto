@@ -55,8 +55,10 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/TransferNFTServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Server/ServerMessageHandler.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Voting/VoteResult.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/LendFundsServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Miner/Scheduler.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Peer/Peer.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/Penalty.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/GetBorrowersServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/FileHandler/HashIndex.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Server/ServerThread.java

@@ -24,6 +24,7 @@ import org.web3j.crypto.ECKeyPair;
  * @author averypozzobon
  */
 public class LendContract implements Serializable {
+    private static final long serialVersionUID = -449495291419446786L;
     private String inceptionDate = null;
     private String lenderAddress = null;
     private String borrowContractHash = null;
@@ -39,12 +40,28 @@ public class LendContract implements Serializable {
         this.borrowContractHash = borrowContractHash;
         this.lendTransaction = lendTransaction;
         this.hash = DigestUtils.sha256Hex(this.inceptionDate + this.lenderAddress + this.borrowContractHash + this.lendTransaction.getHash());
-        this.key = key.getPublicKey();
         try {
+            this.key = key.getPublicKey();
             this.signature = Cryptography.sign(this.hash.getBytes(),key);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public void setTimestamp(String timestamp) {
+        this.inceptionDate = Long.toString(System.currentTimeMillis());
+    }
+    
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+    
+    public void setSignature(byte[] sig) {
+        this.signature = sig;
+    }
+    
+    public void setKey(BigInteger key) {
+        this.key = key;
     }
     
     
