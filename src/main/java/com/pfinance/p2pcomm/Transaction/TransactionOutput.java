@@ -23,7 +23,7 @@ public class TransactionOutput implements Serializable {
     public TransactionOutput(String address, float value) {
         this.address = address;
         this.value = value;
-        this.hash = DigestUtils.sha256Hex(this.address + this.value);
+        this.hash = DigestUtils.sha256Hex(this.address);
     }
     
     public String toString() {
