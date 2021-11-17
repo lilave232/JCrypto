@@ -31,8 +31,8 @@ public class Transaction implements Serializable {
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
+    public Transaction(String time) {
+        this.timestamp = time;
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     

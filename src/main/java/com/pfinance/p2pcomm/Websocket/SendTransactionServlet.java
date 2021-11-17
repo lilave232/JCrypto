@@ -16,6 +16,7 @@ import com.pfinance.p2pcomm.Session;
 import com.pfinance.p2pcomm.Transaction.Transaction;
 import com.pfinance.p2pcomm.Transaction.TransactionInput;
 import com.pfinance.p2pcomm.Transaction.TransactionOutput;
+import com.pfinance.p2pcomm.Transaction.UTXO;
 import com.pfinance.p2pcomm.Wallet.Wallet;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -54,8 +55,7 @@ public class SendTransactionServlet extends HttpServlet {
             JsonObject jsonObject = new JsonParser().parse(jsonString).getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction txn = new Transaction();
-            txn.setTimestamp(jsonObject.get("timestamp").getAsString());
+            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString());
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();
@@ -71,8 +71,8 @@ public class SendTransactionServlet extends HttpServlet {
                 System.arraycopy(r, 0, signature, 0, r.length);
                 System.arraycopy(s, 0, signature, r.length, s.length);
                 signature[64] = v;
-
                 TransactionInput input = new TransactionInput(previousTxn,index,signature,new BigInteger(sigObject.get("public").getAsString()));
+                UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
                 txn.addInput(input);
             }
 

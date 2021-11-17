@@ -77,8 +77,7 @@ public class LendFundsServlet extends HttpServlet {
             jsonObject = jsonObject.get("lendTransaction").getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction txn = new Transaction();
-            txn.setTimestamp(jsonObject.get("timestamp").getAsString());
+            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString());
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();

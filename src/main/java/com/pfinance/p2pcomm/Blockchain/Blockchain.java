@@ -251,8 +251,7 @@ public class Blockchain {
     }
     
     public Penalty generatePenalty(StakeContract contract, String timestamp) {
-        Transaction transaction = new Transaction();
-        transaction.setTimestamp(timestamp);
+        Transaction transaction = new Transaction(timestamp);
         TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Penalty"),0,DigestUtils.sha256("Penalty"),null);
         ArrayList<TransactionOutput> outputs = generatePenaltyOutputs(contract,timestamp);
         for (TransactionOutput output : outputs) {
