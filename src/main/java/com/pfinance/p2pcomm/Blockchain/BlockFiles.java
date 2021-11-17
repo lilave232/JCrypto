@@ -179,6 +179,21 @@ public class BlockFiles {
         return contracts;
     }
     
+    public BorrowContract[] getBorrowContractObjects() throws IOException, ClassNotFoundException, IOException {
+        File f = new File(session.getPath() + "/contracts/borrow");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+        });
+        BorrowContract[] contracts = new BorrowContract[files.length];
+        for (int x = 0; x < files.length; x++) {
+            contracts[x] = getBorrowContract(files[x].getName());
+        }
+        return contracts;
+    }
+    
     public BorrowContract getBorrowContract(String hash) throws IOException, FileNotFoundException, FileNotFoundException, ClassNotFoundException {
         FileHandler handler = new FileHandler();
         return (BorrowContract) handler.readObject(session.getPath() + "/contracts/borrow/" + hash + "/contract");

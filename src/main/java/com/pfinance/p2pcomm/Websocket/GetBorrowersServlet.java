@@ -5,6 +5,7 @@
  */
 package com.pfinance.p2pcomm.Websocket;
 
+import com.pfinance.p2pcomm.Contracts.BorrowContract;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Session;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.web3j.utils.Numeric;
 
 /**
@@ -39,12 +42,22 @@ public class GetBorrowersServlet  extends HttpServlet {
     {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().print("{\"borrowers\":[");
-        String[] contracts = session.getBlockFileHandler().getBorrowContracts();
-        for (int i = 0; i < contracts.length; i++) {
-            response.getWriter().print("\"" + contracts[i] + "\"");
+        String responseValue = "{\"borrowers\":[";
+        BorrowContract[] contracts;
+        try {
+            contracts = session.getBlockFileHandler().getBorrowContractObjects();
+            for (int i = 0; i < contracts.length; i++) {
+                if (contracts[i] != null) {
+                    responseValue += "{\"hash\":\"" + contracts[i].getHash() + "\",\"borrowerAddress\":\"" + contracts[i].getBorrowerAddress() + "\"}";
+                    if (i < contracts.length-1)
+                        responseValue +=",";
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(GetBorrowersServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-        response.getWriter().print("]}");
+        responseValue += "]}";
+        response.getWriter().print(responseValue);
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().close();
     }

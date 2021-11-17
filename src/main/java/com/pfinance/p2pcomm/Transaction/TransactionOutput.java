@@ -8,6 +8,7 @@ package com.pfinance.p2pcomm.Transaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  *
@@ -17,10 +18,12 @@ public class TransactionOutput implements Serializable {
     private static final long serialVersionUID = -6499451418241794783L;
     public String address;
     public float value;
+    private String hash = null;
     
     public TransactionOutput(String address, float value) {
         this.address = address;
         this.value = value;
+        this.hash = DigestUtils.sha256Hex(this.address + this.value);
     }
     
     public String toString() {
@@ -35,6 +38,10 @@ public class TransactionOutput implements Serializable {
         returnString.append(String.format("%-32s|", ""));
         returnString.append(String.format("%-32s|", ""));
         return returnString.toString();
+    }
+    
+    public String getHash() {
+        return this.hash;
     }
     
     public ArrayList<TransactionOutput> toList() {

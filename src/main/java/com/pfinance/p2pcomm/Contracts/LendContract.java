@@ -48,6 +48,16 @@ public class LendContract implements Serializable {
         }
     }
     
+    public LendContract(String timestamp, String lenderAddress, String borrowContractHash, Transaction lendTransaction, byte[] signature, BigInteger key) {
+        this.inceptionDate = timestamp;
+        this.lenderAddress = lenderAddress;
+        this.borrowContractHash = borrowContractHash;
+        this.lendTransaction = lendTransaction;
+        this.hash = DigestUtils.sha256Hex(this.inceptionDate + this.lenderAddress + this.borrowContractHash + this.lendTransaction.getHash());
+        this.key = key;
+        this.signature = signature;
+    }
+    
     public void setTimestamp(String timestamp) {
         this.inceptionDate = Long.toString(System.currentTimeMillis());
     }

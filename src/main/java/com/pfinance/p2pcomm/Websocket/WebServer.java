@@ -137,6 +137,10 @@ public class WebServer extends Thread {
             servletHolder = new ServletHolder(sendTxn);
             servletContextHandler.addServlet(servletHolder, "/sendTxn");
             
+            LendFundsServlet lendTxn = new LendFundsServlet(this.session);
+            servletHolder = new ServletHolder(lendTxn);
+            servletContextHandler.addServlet(servletHolder, "/lendFunds");
+            
             PeerServlet peerServlet = new PeerServlet(this.session);
             servletHolder = new ServletHolder(peerServlet);
             servletContextHandler.addServlet(servletHolder, "/peer");

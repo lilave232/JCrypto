@@ -22,25 +22,29 @@ public class Transaction implements Serializable {
     ArrayList<TransactionOutput> outputs = new ArrayList<TransactionOutput>();
     private String timestamp = null;
     private String hash = null;
+    public String input_hashes = "";
+    public String output_hashes = "";
     
     public Transaction() {
         String time = Long.toString(System.currentTimeMillis());
         this.timestamp = time;
-        this.hash = DigestUtils.sha256Hex(this.inputs.toString()+this.outputs.toString()+this.timestamp);
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
-        this.hash = DigestUtils.sha256Hex(this.inputs.toString()+this.outputs.toString()+this.timestamp);
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     
     public void addInput(TransactionInput input) {
         inputs.add(input);
-        this.hash = DigestUtils.sha256Hex(this.inputs.toString()+this.outputs.toString()+this.timestamp);
+        input_hashes += input.getHash();
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     public void addOutput(TransactionOutput output) {
         outputs.add(output);
-        this.hash = DigestUtils.sha256Hex(this.inputs.toString()+this.outputs.toString()+this.timestamp);
+        output_hashes += output.getHash();
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     
     public float sum() {

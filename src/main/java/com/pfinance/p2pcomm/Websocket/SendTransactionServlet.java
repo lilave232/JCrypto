@@ -55,11 +55,12 @@ public class SendTransactionServlet extends HttpServlet {
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
             Transaction txn = new Transaction();
+            txn.setTimestamp(jsonObject.get("timestamp").getAsString());
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
-                String previousTxn = object.get("previousTxn").getAsString();
-                Integer index = object.get("index").getAsInt();
-                JsonObject sigObject = object.get("signature").getAsJsonObject();
+                String previousTxn = object.get("previousTxnHash").getAsString();
+                Integer index = object.get("outputIndex").getAsInt();
+                JsonObject sigObject = object.get("outputSignature").getAsJsonObject();
 
                 int recId = sigObject.get("v").getAsInt();
                 int headerByte = recId + 27;
@@ -98,6 +99,7 @@ public class SendTransactionServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().close();
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().close();
         }

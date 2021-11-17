@@ -48,11 +48,7 @@ public class TransactionInput implements Serializable {
     }
     
     public String getHash() {
-        if (this.hash == null) {
-            return this.toString();
-        } else {
-            return this.hash;
-        }
+        return this.hash;
     }
     
     public byte[] serialize() throws IOException {

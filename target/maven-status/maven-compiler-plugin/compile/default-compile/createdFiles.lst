@@ -45,6 +45,7 @@ com/pfinance/p2pcomm/FileHandler/FileHandler.class
 com/pfinance/p2pcomm/Blockchain/Blockchain.class
 com/pfinance/p2pcomm/Main.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$14.class
+com/pfinance/p2pcomm/Blockchain/BlockFiles$17.class
 com/pfinance/p2pcomm/Contracts/ListNFT.class
 com/pfinance/p2pcomm/FileHandler/HashIndex.class
 com/pfinance/p2pcomm/Wallet/Wallet$2.class
