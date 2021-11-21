@@ -18,6 +18,7 @@ import java.util.TimerTask;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  *
@@ -102,6 +103,9 @@ public class Miner {
                 System.out.println("Block Confirmed");
                 session.getBlockchain().addBlock(session.getBlockchain().block);
                 session.getPeer().getBallotBox().clearVotes(VoteType.BLOCK);
+                String hashObject = StringEscapeUtils.escapeJson(DatatypeConverter.printBase64Binary(this.session.getBlockchain().getHashIndex().toBytes()));
+                JsonObject hashes = Json.createObjectBuilder().add("hashes", hashObject).build();
+                session.getPeer().getServer().sendMessage(Message.DOWNLOADHASHRECEIVED, hashes);
             }
         }
     }

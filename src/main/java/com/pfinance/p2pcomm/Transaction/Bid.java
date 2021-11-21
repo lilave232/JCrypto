@@ -40,6 +40,18 @@ public class Bid implements Serializable {
         this.hash = DigestUtils.sha256Hex(this.timestamp+this.contractHash+this.transaction.getHash());
         this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
     }
+    
+    public Bid(String time, String contractHash, Transaction transaction, byte[] signature, BigInteger key) {
+        this.timestamp = time;
+        this.contractHash = contractHash;
+        this.key = key;
+        this.transaction = transaction;
+        this.transaction.getInputs().forEach(input -> {
+            input.removeSignature();
+        });
+        this.hash = DigestUtils.sha256Hex(this.timestamp+this.contractHash+this.transaction.getHash());
+        this.signature = signature;
+    }
 
     
     public String getHash() {return this.hash;}

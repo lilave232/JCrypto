@@ -138,6 +138,7 @@ public class ServerMessageHandler {
                                 System.out.println("Block Confirmed");
                                 session.getBlockchain().addBlock(block);
                                 String hashObject = StringEscapeUtils.escapeJson(DatatypeConverter.printBase64Binary(this.server.getPeer().getSession().getBlockchain().getHashIndex().toBytes()));
+                                session.getPeer().getBallotBox().clearVotes(VoteType.BLOCK);
                                 JsonObject hashes = Json.createObjectBuilder().add("hashes", hashObject).build();
                                 this.server.sendMessage(Message.DOWNLOADHASHRECEIVED, hashes);
                             }

@@ -29,11 +29,21 @@ public class ListNFT implements Serializable {
     private BigInteger key = null;
     
     public ListNFT(String nftHash, Transaction validatorCommission, Key key) {
+        this.timestamp = Long.toString(System.currentTimeMillis());
         this.nftHash = nftHash;
         this.validatorCommission = validatorCommission;
         this.hash = DigestUtils.sha256Hex(this.timestamp + this.nftHash + this.validatorCommission.getHash());
         this.key = key.getKey().getPublicKey();
         this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
+    }
+    
+    public ListNFT(String timestamp, String nftHash, Transaction validatorCommission, byte[] signature, BigInteger key) {
+        this.timestamp = timestamp;
+        this.nftHash = nftHash;
+        this.validatorCommission = validatorCommission;
+        this.hash = DigestUtils.sha256Hex(this.timestamp + this.nftHash + this.validatorCommission.getHash());
+        this.key = key;
+        this.signature = signature;
     }
     
     public String getTimestamp() {return this.timestamp;}

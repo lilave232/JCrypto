@@ -56,6 +56,25 @@ public class NFTTransfer implements Serializable {
         } catch (Exception e) {e.printStackTrace();}
     }
     
+    public NFTTransfer(String time, Object saleTransaction, String previousHash, String nftHash, String transferToAddress, byte[] signature, BigInteger key) {
+        this.transferDate = time;
+        String saleTransactionHash = "";
+        if (saleTransaction instanceof Transaction) {
+            this.saleTransaction = (Transaction) saleTransaction;
+            saleTransactionHash = this.saleTransaction.getHash();
+        }
+        if (saleTransaction instanceof Bid) {
+            this.bidTransaction = (Bid) saleTransaction;
+            saleTransactionHash = this.bidTransaction.getHash();
+        }
+        this.nftHash = nftHash;
+        this.previousHash = previousHash;
+        this.transferToAddress = transferToAddress;
+        this.hash = DigestUtils.sha256Hex(this.transferDate + this.nftHash + this.previousHash + this.transferToAddress + saleTransactionHash);
+        this.key = key;
+        this.signature = signature;
+    }
+    
     public String getHash() {return this.hash; }
     public BigInteger getKey() {return this.key;}
     public byte[] getSignature() {return this.signature;}

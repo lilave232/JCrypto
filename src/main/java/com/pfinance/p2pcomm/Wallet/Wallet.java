@@ -447,6 +447,11 @@ public class Wallet {
         return list;
     }
     
+    public DelistNFT delistNFT(NFT nft) throws Exception {
+        DelistNFT delist = new DelistNFT(nft.getHash(),getKey());
+        return delist;
+    }
+    
     public NFT getNFT(String hash) {
         try {
             NFT nft = (NFT) new FileHandler().readObject(this.session.getPath() + "/wallets/" + this.getName() + "/contracts/nfts/" + hash + "/nft");

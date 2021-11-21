@@ -1,6 +1,8 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/LoadWalletServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/NFTTransfer.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Main.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/DelistNFT.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/NFTBidServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/NFTServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/SendTransactionServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Server/Server.java
@@ -20,6 +22,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/UTXO.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Blockchain/Block.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Wallet/Wallet.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/DelistNFTServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/BorrowContract.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WalletCreatedServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/NFT.java
@@ -33,6 +36,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Statistics/TransactionInOut.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Statistics/Statistics.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/LoadFolderServlet.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/AcceptBidServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WebServer.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/EndLendContract.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Blockchain/BlockFiles.java
@@ -52,6 +56,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/MainServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Voting/BallotBox.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Peer/PeerMessageHandler.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/ListNFTServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/TransferNFTServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Server/ServerMessageHandler.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Voting/VoteResult.java

@@ -148,15 +148,31 @@ public class WebServer extends Thread {
             NFTServlet nftServlet = new NFTServlet(this.session);
             servletHolder = new ServletHolder(nftServlet);
             servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(System.getProperty("user.dir") + "/tmp"));
-            servletContextHandler.addServlet(servletHolder, "/nft");
+            servletContextHandler.addServlet(servletHolder, "/mintNFT");
             
             TransferNFTServlet transferNFTServlet = new TransferNFTServlet(this.session);
             servletHolder = new ServletHolder(transferNFTServlet);
             servletContextHandler.addServlet(servletHolder, "/transferNFT");
             
+            ListNFTServlet listNFTServlet = new ListNFTServlet(this.session);
+            servletHolder = new ServletHolder(listNFTServlet);
+            servletContextHandler.addServlet(servletHolder, "/listNFT");
+            
             GetBorrowersServlet borrowersServlet = new GetBorrowersServlet(this.session);
             servletHolder = new ServletHolder(borrowersServlet);
             servletContextHandler.addServlet(servletHolder, "/getBorrowers");
+            
+            NFTBidServlet nftBidServlet = new NFTBidServlet(this.session);
+            servletHolder = new ServletHolder(nftBidServlet);
+            servletContextHandler.addServlet(servletHolder, "/placeBid");
+            
+            AcceptBidServlet acceptBidServlet = new AcceptBidServlet(this.session);
+            servletHolder = new ServletHolder(acceptBidServlet);
+            servletContextHandler.addServlet(servletHolder, "/acceptBid");
+            
+            DelistNFTServlet delistNFTServlet = new DelistNFTServlet(this.session);
+            servletHolder = new ServletHolder(delistNFTServlet);
+            servletContextHandler.addServlet(servletHolder, "/delistNFT");
             
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);

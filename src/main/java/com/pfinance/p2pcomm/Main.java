@@ -9,6 +9,7 @@ import com.pfinance.p2pcomm.Blockchain.Block;
 import com.pfinance.p2pcomm.Blockchain.BlockValidation;
 import com.pfinance.p2pcomm.Blockchain.Blockchain;
 import com.pfinance.p2pcomm.Contracts.BorrowContract;
+import com.pfinance.p2pcomm.Contracts.DelistNFT;
 import com.pfinance.p2pcomm.Contracts.EndLendContract;
 import com.pfinance.p2pcomm.Contracts.LendContract;
 import com.pfinance.p2pcomm.Contracts.ListNFT;
@@ -272,7 +273,8 @@ public class Main {
         if (session.getPeer() != null) System.out.println("[17]Bid on NFT");
         if (session.getPeer() != null) System.out.println("[18]Show Bids");
         if (session.getPeer() != null) System.out.println("[19]Accept Bid and Transfer");
-        if (session.getPeer() != null) System.out.println("[20]Run Webserver");
+        if (session.getPeer() != null) System.out.println("[20]Delist NFT");
+        if (session.getPeer() != null) System.out.println("[21]Run Webserver");
         
         System.out.println("[E]Exit");
         System.out.println("Selection?");
@@ -469,13 +471,30 @@ public class Main {
             }
         }
         else if (response.equals("20") && session.getPeer() != null) {
+            ArrayList<NFT> listedNFTs = session.getBlockFileHandler().getWalletListNFTs(activeWallet.getAddress());
+            for (int i = 0; i < listedNFTs.size(); i++) {
+                System.out.println("[" + i + "]" + listedNFTs.get(i).getHash());
+            }
+            System.out.println("Selection?");
+            Integer selection = Integer.valueOf(bufferedReader.readLine());
+            DelistNFT delistNFT = activeWallet.delistNFT(listedNFTs.get(selection));
+            String object = DatatypeConverter.printBase64Binary(delistNFT.toBytes());
+            JsonObject data = Json.createObjectBuilder().add("data", object).build();
+            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+            if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                boolean result = session.getBlockchain().addData(delistNFT);
+                if (result) {session.getBlockchain().addPendingTxn(delistNFT);System.out.println("Transaction Accepted");} 
+                else {System.out.println("Transaction Failed");} 
+            }
+        }
+        else if (response.equals("21") && session.getPeer() != null) {
             WebServer webserver = new WebServer(session);
             webserver.start();
         }
-        else if (response.equals("21")) {System.out.println(session.getValidators());}
-        else if (response.equals("22")) {System.out.println(session.getBlockchain().block);}
-        else if (response.equals("23")) {System.out.println(session.getScheduler());}
-        else if (response.equals("24")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
+        else if (response.equals("22")) {System.out.println(session.getValidators());}
+        else if (response.equals("23")) {System.out.println(session.getBlockchain().block);}
+        else if (response.equals("24")) {System.out.println(session.getScheduler());}
+        else if (response.equals("25")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
         else if (response.equals("e")) {System.exit(0);}
     }
     

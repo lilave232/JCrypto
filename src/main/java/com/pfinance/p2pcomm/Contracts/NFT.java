@@ -50,6 +50,19 @@ public class NFT implements Serializable {
         } catch (Exception e) {e.printStackTrace();}
     }
     
+    public NFT(String inceptionDate, String initiatorAddress, Transaction mintFee, String fileType, String title, String description, byte[] data, byte[] signature, BigInteger publicKey) {
+        this.inceptionDate = inceptionDate;
+        this.initiatorAddress = initiatorAddress;
+        this.mintFee = mintFee;
+        this.data = data;
+        this.title = title;
+        this.description = description;
+        this.hash = DigestUtils.sha256Hex(this.inceptionDate + this.initiatorAddress + DigestUtils.sha256Hex(data) + this.mintFee.getHash());
+        this.key = publicKey;
+        this.fileType = fileType;
+        this.signature = signature;
+    }
+    
     public byte[] getData() {return this.data;}
     public String getInceptionDate() {return this.inceptionDate;}
     public String getInceptionDateFormatted() {return new Timestamp(Long.valueOf(this.inceptionDate)).toString();}

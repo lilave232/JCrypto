@@ -87,6 +87,7 @@ public class BlockValidation {
                     else if (obj instanceof NFTTransfer) {if (!verifyNFTTransfer((NFTTransfer) obj)) return false;}
                     else if (obj instanceof ListNFT) {if (!verifyListNFT((ListNFT) obj)) return false;}
                     else if (obj instanceof Bid) {if (!verifyBid((Bid) obj)) return false;}
+                    else if (obj instanceof DelistNFT) {if (!verifyDeListNFT((DelistNFT) obj)) return false;}
                     else {return false;}
                 }
                 System.out.println("Confirmed Transactions");
@@ -192,6 +193,7 @@ public class BlockValidation {
     }
     
     public boolean verifyListNFT(ListNFT listNFT) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
+        
         String hash = DigestUtils.sha256Hex(listNFT.getTimestamp() + listNFT.getNFTHash() + listNFT.getValidatorCommission().getHash());
         if (!listNFT.getHash().equals(hash)) return false;
         //System.out.println("Hash is Equal");
@@ -219,11 +221,25 @@ public class BlockValidation {
         return true;
     }
     
+    public boolean verifyDeListNFT(DelistNFT delistNFT) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
+        String hash = DigestUtils.sha256Hex(delistNFT.getTimestamp() + delistNFT.getNFTHash());
+        if (!delistNFT.getHash().equals(hash)) return false;
+        //System.out.println("Hash is Equal");
+        NFT nft = (NFT) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + delistNFT.getNFTHash() + "/nft");
+        if (nft == null) return false;
+        ListNFT listNFT = (ListNFT) new FileHandler().readObject(session.getPath() + "/contracts/listNFTs/" + delistNFT.getNFTHash() + "/nft");
+        if (!Cryptography.verify(listNFT.getSignature(), listNFT.getHash().getBytes(), delistNFT.getKey())) return false;
+        //System.out.println("Commission Transaction Verified");
+        if (!Cryptography.verify(delistNFT.getSignature(),hash.getBytes(),delistNFT.getKey())) return false;
+        //System.out.println("Listing Verified");
+        return true;
+    }
+    
     public boolean verifyBidSale(Bid bid) throws IOException, FileNotFoundException, ClassNotFoundException {
-        System.out.println("Verifying Bid");
+        //System.out.println("Verifying Bid");
         String hash = DigestUtils.sha256Hex(bid.getTimestamp()+bid.getContractHash()+bid.getTransaction().getHash());
         if (!bid.getHash().equals(hash)) return false;
-        System.out.println("Hash Equal");
+        //System.out.println("Hash Equal");
         ArrayList<TransactionInput> inputs = bid.getTransaction().getInputs();
         ArrayList<TransactionOutput> outputs = bid.getTransaction().getOutputs();
         float inputSum = 0;
@@ -233,7 +249,7 @@ public class BlockValidation {
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum += utxo.toFloat();
         }
-        System.out.println("Inputs Verified");
+        //System.out.println("Inputs Verified");
         reward += inputSum - bid.getTransaction().sum();
         //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
@@ -241,25 +257,25 @@ public class BlockValidation {
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
             blockUtxosUsed.add(utxo.getPreviousHash() + "|" + utxo.getIndex());
         }
-        System.out.println("Outputs Verified");
+        //System.out.println("Outputs Verified");
         NFT nft = (NFT) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + bid.getContractHash() + "/nft");
         if (nft == null) return false;
-        System.out.println("NFT Exists");
+        //System.out.println("NFT Exists");
         ListNFT lnft = (ListNFT) new FileHandler().readObject(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/nft");
         if (lnft == null) return false;
-        System.out.println("NFT Listed");
+        //System.out.println("NFT Listed");
         if (!Cryptography.verify(bid.getSignature(), hash.getBytes(), bid.getKey())) return false;
-        System.out.println("Signature Verified");
+        //System.out.println("Signature Verified");
         return true;
     }
     
     public boolean verifyBid(Bid bid) throws IOException, FileNotFoundException, ClassNotFoundException {
-        System.out.println("Verifying Bid");
+        //System.out.println("Verifying Bid");
         Bid pendingBid = (Bid) new FileHandler().readObject(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/" + bid.getHash());
         if (pendingBid != null) {return verifyBidSale(bid);}
         String hash = DigestUtils.sha256Hex(bid.getTimestamp()+bid.getContractHash()+bid.getTransaction().getHash());
         if (!bid.getHash().equals(hash)) return false;
-        System.out.println("Hash Equal");
+        //System.out.println("Hash Equal");
         ArrayList<TransactionInput> inputs = bid.getTransaction().getInputs();
         ArrayList<TransactionOutput> outputs = bid.getTransaction().getOutputs();
         float inputSum = 0;
@@ -269,7 +285,7 @@ public class BlockValidation {
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum += utxo.toFloat();
         }
-        System.out.println("Inputs Verified");
+        //System.out.println("Inputs Verified");
         //reward += inputSum - bid.getTransaction().sum();
         //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
@@ -277,15 +293,15 @@ public class BlockValidation {
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
             blockUtxosUsed.add(utxo.getPreviousHash() + "|" + utxo.getIndex());
         }
-        System.out.println("Outputs Verified");
+        //System.out.println("Outputs Verified");
         NFT nft = (NFT) new FileHandler().readObject(session.getPath() + "/contracts/nfts/" + bid.getContractHash() + "/nft");
         if (nft == null) return false;
-        System.out.println("NFT Exists");
+        //System.out.println("NFT Exists");
         ListNFT lnft = (ListNFT) new FileHandler().readObject(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/nft");
         if (lnft == null) return false;
-        System.out.println("NFT Listed");
+        //System.out.println("NFT Listed");
         if (!Cryptography.verify(bid.getSignature(), hash.getBytes(), bid.getKey())) return false;
-        System.out.println("Signature Verified");
+        //System.out.println("Signature Verified");
         return true;
     }
     
