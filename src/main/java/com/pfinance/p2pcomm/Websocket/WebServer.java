@@ -60,6 +60,7 @@ public class WebServer extends Thread {
     
     public WebServer(Session session) {
         this.session = session;
+        this.server = new Server();
         /*
         try {
             this.session.setPath("First");
@@ -71,10 +72,21 @@ public class WebServer extends Thread {
         */
     }
     
+    public boolean isRunning() {
+        return server.isRunning();
+    }
+    
+    public void stopServer() {
+        try {
+            this.server.stop();
+            interrupt();
+        } catch (Exception ex) {
+            Logger.getLogger(WebServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public void run() {
         try {
-            
-            server = new Server();
                 // Define ServerConnector
             ServerConnector connector = new ServerConnector(server);
             connector.setPort(8080);

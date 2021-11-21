@@ -21,6 +21,7 @@ import com.pfinance.p2pcomm.P2P.Server.ServerMessageHandler;
 import com.pfinance.p2pcomm.Statistics.Statistics;
 import com.pfinance.p2pcomm.Transaction.UTXO;
 import com.pfinance.p2pcomm.Wallet.Wallet;
+import com.pfinance.p2pcomm.Websocket.WebServer;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -57,6 +58,7 @@ public class Session {
     private Boolean validation = false;
     private Miner miner = new Miner(this);
     private boolean chainDownloaded = false;
+    private WebServer webserver = null;
     
     public Session() {
         
@@ -199,4 +201,6 @@ public class Session {
     public Miner getMiner() {return this.miner;}
     public void setChainDownloaded(boolean downloaded) {this.chainDownloaded = downloaded;}
     public boolean getChainDownloaded() {return this.chainDownloaded;}
+    public void setWebserver(WebServer server) {this.webserver = server;}
+    public WebServer getWebserver() {return this.webserver;}
 }

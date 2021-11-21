@@ -274,7 +274,14 @@ public class Main {
         if (session.getPeer() != null) System.out.println("[18]Show Bids");
         if (session.getPeer() != null) System.out.println("[19]Accept Bid and Transfer");
         if (session.getPeer() != null) System.out.println("[20]Delist NFT");
-        if (session.getPeer() != null) System.out.println("[21]Run Webserver");
+        if (session.getPeer() != null) {
+            if (session.getWebserver() != null) {
+                if (!session.getWebserver().isRunning()) {System.out.println("[21]Start Webserver");}
+                else {System.out.println("[21]Stop Webserver");}
+            } else {
+                System.out.println("[21]Start Webserver");
+            }
+        }
         
         System.out.println("[E]Exit");
         System.out.println("Selection?");
@@ -488,9 +495,13 @@ public class Main {
             }
         }
         else if (response.equals("21") && session.getPeer() != null) {
-            WebServer webserver = new WebServer(session);
-            webserver.start();
+            if (session.getWebserver() == null || !session.getWebserver().isRunning()) {
+                session.setWebserver(new WebServer(session));
+                session.getWebserver().start();
+            }
+            else {session.getWebserver().stopServer();}
         }
+        
         else if (response.equals("22")) {System.out.println(session.getValidators());}
         else if (response.equals("23")) {System.out.println(session.getBlockchain().block);}
         else if (response.equals("24")) {System.out.println(session.getScheduler());}
