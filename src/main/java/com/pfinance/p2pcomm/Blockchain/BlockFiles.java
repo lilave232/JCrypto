@@ -446,6 +446,7 @@ public class BlockFiles {
                 session.getBlockchain().getPendingUTXOs().remove(utxo.getPreviousHash() + "|" + utxo.getIndex());
             File f = new File(session.getPath() + "/held_utxos/" + contractHash + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             handler.deleteFile(f.getPath());
+            handler.writeObject(session.getPath() + "/used_utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex), utxo);
             if (this.walletAddresses.contains(utxo.getAddress())) {
                 String path = this.getWalletPath(utxo.getAddress());
                 Files.createDirectories(Paths.get(path + "/used_utxos/"));
