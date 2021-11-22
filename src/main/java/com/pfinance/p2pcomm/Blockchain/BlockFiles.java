@@ -849,16 +849,19 @@ public class BlockFiles {
         }
     }
     
-    public void saveBid(Bid bid) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
-        Files.createDirectories(Paths.get(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/"));
+    public void saveBid(Bid bid) {
+        try {Files.createDirectories(Paths.get(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/"));}catch(Exception e){};
         FileHandler handler = new FileHandler();
-        handler.writeObject(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/" + bid.getHash(), bid);
-        String currentOwner = getNFTOwner(bid.getContractHash());
-        if (this.getWalletAddresses().contains(currentOwner)) {
-            String path = this.getWalletPath(currentOwner);
-            Files.createDirectories(Paths.get(path + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/"));
-            handler.writeObject(path + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/" + bid.getHash(), bid);
-        }
+        try {handler.writeObject(session.getPath() + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/" + bid.getHash(), bid);}catch(Exception e){};
+        try {
+            String currentOwner = getNFTOwner(bid.getContractHash());
+            if (this.getWalletAddresses().contains(currentOwner)) {
+                String path = this.getWalletPath(currentOwner);
+                Files.createDirectories(Paths.get(path + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/"));
+                handler.writeObject(path + "/contracts/listNFTs/" + bid.getContractHash() + "/bids/" + bid.getHash(), bid);
+            }
+        } catch (Exception e) {}
+        
     }
     
     public void saveBid(Bid bid,String address) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {

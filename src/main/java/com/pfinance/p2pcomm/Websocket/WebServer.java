@@ -113,38 +113,6 @@ public class WebServer extends Thread {
             ServletHolder servletHolder = new ServletHolder(servlet);
             servletContextHandler.addServlet(servletHolder, "");
             
-            CreateFolderServlet createFolderServlet = new CreateFolderServlet(this.session);
-            servletHolder = new ServletHolder(createFolderServlet);
-            servletContextHandler.addServlet(servletHolder, "/createFolder");
-            
-            LoadFolderServlet loadFolderServlet = new LoadFolderServlet(this.session);
-            servletHolder = new ServletHolder(loadFolderServlet);
-            servletContextHandler.addServlet(servletHolder, "/loadFolder");
-            
-            MainServlet mainServlet = new MainServlet(this.session);
-            servletHolder = new ServletHolder(mainServlet);
-            servletContextHandler.addServlet(servletHolder, "/main");
-            
-            SelectWalletServlet selectServlet = new SelectWalletServlet(this.session);
-            servletHolder = new ServletHolder(selectServlet);
-            servletContextHandler.addServlet(servletHolder, "/selectWallet");
-            
-            CreateWalletServlet createWalletServlet = new CreateWalletServlet(this.session);
-            servletHolder = new ServletHolder(createWalletServlet);
-            servletContextHandler.addServlet(servletHolder, "/createWallet");
-            
-            WalletCreatedServlet walletCreatedServlet = new WalletCreatedServlet(this.session);
-            servletHolder = new ServletHolder(walletCreatedServlet);
-            servletContextHandler.addServlet(servletHolder, "/walletCreated");
-            
-            ImportWalletServlet importWalletServlet = new ImportWalletServlet(this.session);
-            servletHolder = new ServletHolder(importWalletServlet);
-            servletContextHandler.addServlet(servletHolder, "/importWallet");
-            
-            LoadWalletServlet loadWalletServlet = new LoadWalletServlet(this.session);
-            servletHolder = new ServletHolder(loadWalletServlet);
-            servletContextHandler.addServlet(servletHolder, "/loadWallet");
-            
             SendTransactionServlet sendTxn = new SendTransactionServlet(this.session);
             servletHolder = new ServletHolder(sendTxn);
             servletContextHandler.addServlet(servletHolder, "/sendTxn");
@@ -152,10 +120,6 @@ public class WebServer extends Thread {
             LendFundsServlet lendTxn = new LendFundsServlet(this.session);
             servletHolder = new ServletHolder(lendTxn);
             servletContextHandler.addServlet(servletHolder, "/lendFunds");
-            
-            PeerServlet peerServlet = new PeerServlet(this.session);
-            servletHolder = new ServletHolder(peerServlet);
-            servletContextHandler.addServlet(servletHolder, "/peer");
             
             NFTServlet nftServlet = new NFTServlet(this.session);
             servletHolder = new ServletHolder(nftServlet);

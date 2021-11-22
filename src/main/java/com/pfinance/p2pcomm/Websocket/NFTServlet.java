@@ -93,6 +93,7 @@ public class NFTServlet extends HttpServlet {
                         json.addProperty("initiatorAddress", nft.getInitiatorAddress());
                         json.addProperty("title", nft.getTitle());
                         json.addProperty("description", nft.getDescription());
+                        json.addProperty("type", nft.getFileType());
                         json.addProperty("hash", nft.getHash());
                         json.addProperty("bytes", nft.getBase64());
                         HashIndex index;

@@ -170,6 +170,7 @@ public class Blockchain {
             if (this.session.getBlockFileHandler().getPendingObject(((ListNFT) object).getNFTHash()) != null) return false;
             if (this.blockValidator.verifyListNFT((ListNFT)object)) {block.addData(object, getFee(((ListNFT) object).getValidatorCommission()));return true;}
         } else if (object instanceof Bid) {
+            if (this.session.getBlockFileHandler().getPendingObject(((Bid) object).getContractHash()) != null) return false;
             if (this.blockValidator.verifyBid((Bid)object)) {block.addData(object, 0); return true;}
         } else if (object instanceof DelistNFT) {
             if (this.session.getBlockFileHandler().getPendingObject(((DelistNFT) object).getNFTHash()) != null) return false;
