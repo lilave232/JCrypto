@@ -19,7 +19,7 @@ public class TransactionInOut {
     private String hash;
     private Integer output;
     private float amount;
-    private int type; //0 = in, 1 = out;
+    private int type; //0 = in, 1 = out, 2 = pending in, 3 = pending out;
     
     public TransactionInOut(Long date, String hash, Integer output, float amount) {
         this.date = date;
@@ -32,6 +32,10 @@ public class TransactionInOut {
         } else {
             this.type = 1;
         }
+    }
+    
+    public void setType(int x) {
+        this.type = x;
     }
     
     @Override

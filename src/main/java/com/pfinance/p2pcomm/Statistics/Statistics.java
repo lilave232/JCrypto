@@ -8,9 +8,13 @@ package com.pfinance.p2pcomm.Statistics;
 import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.Session;
 import com.pfinance.p2pcomm.Transaction.Penalty;
+import com.pfinance.p2pcomm.Transaction.Transaction;
+import com.pfinance.p2pcomm.Transaction.TransactionInput;
+import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import com.pfinance.p2pcomm.Transaction.UTXO;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -30,6 +34,8 @@ public class Statistics {
         ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
         localInOuts.addAll(getTransactionsOut(address));
         localInOuts.addAll(getTransactionsIn(address));
+        localInOuts.addAll(getTransactionsPendingOut(address));
+        localInOuts.addAll(getTransactionsPendingIn(address));
         localInOuts.sort((a,b) -> Long.compare(b.getDate(), a.getDate()));
         return localInOuts;
     }
@@ -60,16 +66,16 @@ public class Statistics {
                     if (!utxo.getAddress().equals(address)) continue;
                     TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo.toFloat());
                     TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),-utxo.toFloat());
-                   if (localInOuts.contains(txn_in)) {
-                       localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
-                   } else {
-                       localInOuts.add(txn_in);
-                   }
-                   if (localInOuts.contains(txn_out)) {
-                       localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
-                   } else {
-                       localInOuts.add(txn_out);
-                   }
+                    if (localInOuts.contains(txn_in)) {
+                        localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
+                    } else {
+                        localInOuts.add(txn_in);
+                    }
+                    if (localInOuts.contains(txn_out)) {
+                        localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                    } else {
+                        localInOuts.add(txn_out);
+                    }
                }
             } catch (Exception e) {}
         }
@@ -156,6 +162,73 @@ public class Statistics {
                    }
                }
             } catch (Exception e) {}
+        }
+        return localInOuts;
+    }
+    
+    public ArrayList<TransactionInOut> getTransactionsPendingIn(String address) {
+        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+        File f = new File(session.getPath() + "/pending/");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) new ArrayList<>();
+        for (File file : files) {
+            FileHandler handler = new FileHandler();
+            try {
+                Object object = handler.readObject(file.getPath());
+                if (object instanceof Transaction) {
+                    for (int y = 0; y < ((Transaction) object).getOutputs().size(); y++) {
+                        TransactionOutput output = ((Transaction) object).getOutputs().get(y);
+                        if (!output.address.equals(address)) continue;
+                        TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),y,output.value);
+                        txn_out.setType(2);
+                        if (localInOuts.contains(txn_out)) {
+                            localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(output.value);
+                        } else {
+                            localInOuts.add(txn_out);
+                        }
+                    }
+                }
+            }catch (IOException | ClassNotFoundException | NumberFormatException e) {}
+        }
+        return localInOuts;
+    }
+    
+    public ArrayList<TransactionInOut> getTransactionsPendingOut(String address) {
+        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+        File f = new File(session.getPath() + "/pending/");
+        File[] files = f.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile();
+            }
+        });
+        if (files == null) new ArrayList<>();
+        for (File file : files) {
+            FileHandler handler = new FileHandler();
+            try {
+                Object object = handler.readObject(file.getPath());
+                if (object instanceof Transaction) {
+                    for (int y = 0; y < ((Transaction) object).getInputs().size(); y++) {
+                        TransactionInput input = ((Transaction) object).getInputs().get(y);
+                        UTXO utxo = (UTXO) handler.readObject(this.session.getPath() + "/utxos/" + input.previousTxnHash + "|" + input.outputIndex);
+                        if (utxo != null) {
+                            if (!utxo.getAddress().equals(address)) continue;
+                            TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),utxo.getIndex(),-utxo.toFloat());
+                            txn_out.setType(3);
+                            if (localInOuts.contains(txn_out)) {
+                                localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                            } else {
+                                localInOuts.add(txn_out);
+                            }
+                        }
+                    }
+                }
+            }catch (IOException | ClassNotFoundException | NumberFormatException e) {}
         }
         return localInOuts;
     }
