@@ -190,7 +190,7 @@ public class Statistics {
                         } else {
                             localInOuts.add(txn_in);
                         }
-                        txn_in.setType(2);
+                        localInOuts.get(localInOuts.lastIndexOf(txn_in)).setType(2);
                     }
                 }
             }catch (IOException | ClassNotFoundException | NumberFormatException e) {}
@@ -224,7 +224,8 @@ public class Statistics {
                             } else {
                                 localInOuts.add(txn_out);
                             }
-                            txn_out.setType(3);
+                            localInOuts.get(localInOuts.lastIndexOf(txn_out)).setType(3);
+                            System.out.println(localInOuts.get(localInOuts.lastIndexOf(txn_out)).getType());
                         }
                     }
                 }
