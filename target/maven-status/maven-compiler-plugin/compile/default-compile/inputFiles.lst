@@ -23,6 +23,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Blockchain/Block.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Wallet/Wallet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/DelistNFTServlet.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/AirDrop.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/BorrowContract.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WalletCreatedServlet.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/NFT.java

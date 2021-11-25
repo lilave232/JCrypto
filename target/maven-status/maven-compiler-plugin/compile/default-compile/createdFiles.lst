@@ -49,6 +49,7 @@ com/pfinance/p2pcomm/Websocket/MainServlet.class
 com/pfinance/p2pcomm/Websocket/IndexServlet$1.class
 com/pfinance/p2pcomm/FileHandler/FileHandler.class
 com/pfinance/p2pcomm/Blockchain/Blockchain.class
+com/pfinance/p2pcomm/Websocket/AirDrop.class
 com/pfinance/p2pcomm/Main.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$14.class
 com/pfinance/p2pcomm/Blockchain/BlockFiles$17.class

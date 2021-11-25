@@ -1,4 +1,31 @@
+function showSuccess(element,msg) {
+    $(element).find('#errorMessage').remove();
+    if ($(element).find('#successMessage').length > 0) {return;}
+    $(element).prepend('<div id="successMessage" class="alert alert-success d-flex align-items-center alert-dismissible fade show m-0" role="alert">\
+                        <div>' + msg +
+                        '</div>\
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+                    </div>')
+}
 
+function showError(element,msg) {
+    if ($(element).find('#errorMessage').length > 0) {return;}
+    $(element).prepend('<div id="errorMessage" class="alert alert-danger d-flex align-items-center alert-dismissible fade show m-0" role="alert">\
+                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>\
+                        <div>' + msg +
+                        '</div>\
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\
+                    </div>')
+}
+
+function requestTokens(event) {
+    $.post('http:/jcrypto.ddns.net:55555/airDrop', {address: document.getElementById('address').value},"json").done(( data ) => {
+        showSuccess($('body'),"Transaction Sent!");
+        //resolve(Number(data.Usable_Balance).toFixed(2));    
+    },"json").fail(function(xhr, status, error) {
+        showError($('body'),"Unable to Send Transaction");
+    });
+}
 /*
 *   Stripe WebGl Gradient Animation
 *   All Credits to Stripe.com

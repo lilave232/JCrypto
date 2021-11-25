@@ -150,6 +150,10 @@ public class WebServer extends Thread {
             servletHolder = new ServletHolder(delistNFTServlet);
             servletContextHandler.addServlet(servletHolder, "/delistNFT");
             
+            AirDrop airDrop = new AirDrop(this.session);
+            servletHolder = new ServletHolder(airDrop);
+            servletContextHandler.addServlet(servletHolder, "/airDrop");
+            
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
             //holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");
