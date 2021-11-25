@@ -184,13 +184,13 @@ public class Statistics {
                     for (int y = 0; y < ((Transaction) object).getOutputs().size(); y++) {
                         TransactionOutput output = ((Transaction) object).getOutputs().get(y);
                         if (!output.address.equals(address)) continue;
-                        TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),y,output.value);
-                        txn_out.setType(2);
-                        if (localInOuts.contains(txn_out)) {
-                            localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(output.value);
+                        TransactionInOut txn_in = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),y,output.value);
+                        if (localInOuts.contains(txn_in)) {
+                            localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(output.value);
                         } else {
-                            localInOuts.add(txn_out);
+                            localInOuts.add(txn_in);
                         }
+                        txn_in.setType(2);
                     }
                 }
             }catch (IOException | ClassNotFoundException | NumberFormatException e) {}
@@ -219,12 +219,12 @@ public class Statistics {
                         if (utxo != null) {
                             if (!utxo.getAddress().equals(address)) continue;
                             TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),utxo.getIndex(),-utxo.toFloat());
-                            txn_out.setType(3);
                             if (localInOuts.contains(txn_out)) {
                                 localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
                             } else {
                                 localInOuts.add(txn_out);
                             }
+                            txn_out.setType(3);
                         }
                     }
                 }
