@@ -32,10 +32,10 @@ public class Statistics {
     
     public ArrayList<TransactionInOut> getWalletInOuts(String address) {
         ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
-        localInOuts.addAll(getTransactionsOut(address));
-        localInOuts.addAll(getTransactionsIn(address));
-        localInOuts.addAll(getTransactionsPendingOut(address));
-        localInOuts.addAll(getTransactionsPendingIn(address));
+        getTransactionsOut(address,localInOuts);
+        getTransactionsIn(address,localInOuts);
+        getTransactionsPendingOut(address,localInOuts);
+        getTransactionsPendingIn(address,localInOuts);
         localInOuts.sort((a,b) -> Long.compare(b.getDate(), a.getDate()));
         return localInOuts;
     }
@@ -48,8 +48,7 @@ public class Statistics {
         return walletInOuts;
     }
     
-    public ArrayList<TransactionInOut> getTransactionsOut(String address) {
-        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+    public ArrayList<TransactionInOut> getTransactionsOut(String address, ArrayList<TransactionInOut> localInOuts) {
         File f = new File(session.getPath() + "/used_utxos/");
         File[] files = f.listFiles(new FileFilter() {
             @Override
@@ -138,8 +137,7 @@ public class Statistics {
         }
     }
         
-    public ArrayList<TransactionInOut> getTransactionsIn(String address) {
-        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+    public ArrayList<TransactionInOut> getTransactionsIn(String address, ArrayList<TransactionInOut> localInOuts) {
         File f = new File(session.getPath() + "/utxos/");
         File[] files = f.listFiles(new FileFilter() {
             @Override
@@ -166,8 +164,7 @@ public class Statistics {
         return localInOuts;
     }
     
-    public ArrayList<TransactionInOut> getTransactionsPendingIn(String address) {
-        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+    public ArrayList<TransactionInOut> getTransactionsPendingIn(String address, ArrayList<TransactionInOut> localInOuts) {
         File f = new File(session.getPath() + "/pending/");
         File[] files = f.listFiles(new FileFilter() {
             @Override
@@ -198,8 +195,7 @@ public class Statistics {
         return localInOuts;
     }
     
-    public ArrayList<TransactionInOut> getTransactionsPendingOut(String address) {
-        ArrayList<TransactionInOut> localInOuts = new ArrayList<>();
+    public ArrayList<TransactionInOut> getTransactionsPendingOut(String address, ArrayList<TransactionInOut> localInOuts) {
         File f = new File(session.getPath() + "/pending/");
         File[] files = f.listFiles(new FileFilter() {
             @Override
