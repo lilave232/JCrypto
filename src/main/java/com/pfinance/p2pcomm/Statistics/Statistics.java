@@ -225,7 +225,6 @@ public class Statistics {
                                 localInOuts.add(txn_out);
                             }
                             localInOuts.get(localInOuts.lastIndexOf(txn_out)).setType(3);
-                            System.out.println(localInOuts.get(localInOuts.lastIndexOf(txn_out)).getType());
                         }
                     }
                 }
