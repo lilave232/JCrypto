@@ -7,6 +7,8 @@ package com.pfinance.p2pcomm.Statistics;
 
 import com.pfinance.p2pcomm.Transaction.TransactionOutput;
 import com.pfinance.p2pcomm.Transaction.UTXO;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -18,16 +20,16 @@ public class TransactionInOut {
     private Long date;
     private String hash;
     private Integer output;
-    private float amount;
+    private BigDecimal amount;
     private int type; //0 = in, 1 = out, 2 = pending in, 3 = pending out;
     
-    public TransactionInOut(Long date, String hash, Integer output, float amount) {
+    public TransactionInOut(Long date, String hash, Integer output, BigDecimal amount) {
         this.date = date;
         this.hash = hash;
         this.output = output;
         
         this.amount = amount;
-        if (this.amount >= 0) {
+        if (this.amount.compareTo(BigDecimal.ZERO) >= 0) {
             this.type = 0;
         } else {
             this.type = 1;
@@ -63,7 +65,7 @@ public class TransactionInOut {
         }
     }
     
-    public float getAmount() {
+    public BigDecimal getAmount() {
         return this.amount;
     }
     
@@ -71,9 +73,9 @@ public class TransactionInOut {
         return this.output;
     }
     
-    public void addAmount(float amount) {
-        this.amount += amount;
-        if (this.amount >= 0) {
+    public void addAmount(BigDecimal amount) {
+        this.amount = this.amount.add(amount);
+        if (this.amount.compareTo(BigDecimal.ZERO) >= 0) {
             this.type = 0;
         } else {
             this.type = 1;

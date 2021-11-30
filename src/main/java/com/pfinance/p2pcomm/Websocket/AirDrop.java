@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Base64;
 import javax.json.Json;
@@ -42,7 +43,7 @@ public class AirDrop extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         try {
-            Transaction txn = this.session.getWallet().createTransaction(new TransactionOutput(request.getParameter("address"),5).toList(), 0);
+            Transaction txn = this.session.getWallet().createTransaction(new TransactionOutput(request.getParameter("address"),new BigDecimal(5)).toList(), BigDecimal.ZERO);
             String object = DatatypeConverter.printBase64Binary(txn.toBytes());
             javax.json.JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);

@@ -151,22 +151,21 @@ public class Main {
                 Thread.sleep(1 * 1000);
                 while (!session.getChainDownloaded()) { if (session.getPeer().getPeerThreads().isEmpty()){break;}}
                 
-                if ("server".equals(args[6])) {
-                    if ("mine".equals(args[5])) {
+                
+                if ("mine".equals(args[5])) {
+                    System.out.println("Mining");
+                    session.setValidation();
+                    if (args[6].equals("server")) {
                         if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
-                            System.out.println("Mining");
-                            session.setValidation();
                             WebServer webserver = new WebServer(session);
                             webserver.start();
-                        } else {
-                            System.out.println("Unable to mine");
-                            System.exit(0);
                         }
+                    } else {
+                        session.getBlockchain().setFee(new BigDecimal(args[6]));
                     }
                 } else {
                     session.getPeer().addListener(args[5], args[6]);
                 }
-                
             }
             
             if (args.length == 8) {
@@ -174,9 +173,23 @@ public class Main {
                 session.setWallet(new Wallet(session).loadWallet(args[1]));
                 session.getWallet().getKey(args[2]);
                 session.connectPeer(args[3],args[4]);
-                session.getPeer().addListener(args[5], args[6]);
                 Thread.sleep(1 * 1000);
                 while (!session.getChainDownloaded()) {if (session.getPeer().getPeerThreads().isEmpty()){break;}}
+                
+                if ("mine".equals(args[5])) {
+                    System.out.println("Mining");
+                    session.setValidation();
+                    if (args[6].equals("server")) {
+                        WebServer webserver = new WebServer(session);
+                        webserver.start();
+                    } else {
+                        session.getBlockchain().setFee(new BigDecimal(args[6]));
+                    }
+                     session.getBlockchain().setFee(new BigDecimal(args[7]));
+                } else {
+                    session.getPeer().addListener(args[5], args[6]);
+                }
+                
                 
                 if ("mine".equals(args[7])) {
                     if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
@@ -196,7 +209,6 @@ public class Main {
                     System.out.println(session.getWallet().getBalance());
                 }
             }
-            
             if (args.length == 9) {
                 session.setPath(args[0]);
                 session.setWallet(new Wallet(session).loadWallet(args[1]));
@@ -219,15 +231,35 @@ public class Main {
                 if ("server".equals(args[8])) {
                     WebServer webserver = new WebServer(session);
                     webserver.start();
+                } else {
+                    session.setMinFee(new BigDecimal(args[8]));
+                }
+            }
+            
+            if (args.length == 10) {
+                session.setPath(args[0]);
+                session.setWallet(new Wallet(session).loadWallet(args[1]));
+                session.getWallet().getKey(args[2]);
+                session.connectPeer(args[3],args[4]);
+                session.getPeer().addListener(args[5], args[6]);
+                Thread.sleep(1 * 1000);
+                while (!session.getChainDownloaded()) {}
+                
+                if ("mine".equals(args[7])) {
+                    if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                        System.out.println("Mining");
+                        session.setValidation();
+                    } else {
+                        System.out.println("Unable to mine");
+                        System.exit(0);
+                    }
                 }
                 
-                if ("address".equals(args[7])) {
-                    System.out.println(session.getWallet().getAddress());
+                if ("server".equals(args[8])) {
+                    WebServer webserver = new WebServer(session);
+                    webserver.start();
                 }
-                
-                if ("balance".equals(args[7])) {
-                    System.out.println(session.getWallet().getBalance());
-                }
+                session.setMinFee(new BigDecimal(args[9]));
             }
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
@@ -282,7 +314,7 @@ public class Main {
                 System.out.println("[21]Start Webserver");
             }
         }
-        
+        if (session.getPeer() != null && session.getValidation()) System.out.println("[22]Set Fee");
         System.out.println("[E]Exit");
         System.out.println("Selection?");
         
@@ -307,28 +339,35 @@ public class Main {
             System.out.println("Address?");
             String address = bufferedReader.readLine();
             System.out.println("Amount to Send?");
-            float value = Float.valueOf(bufferedReader.readLine());
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
+            BigDecimal value = new BigDecimal(bufferedReader.readLine());
             TransactionOutput output = new TransactionOutput(address,value);
+            BigDecimal fee = BigDecimal.ZERO;
+            activeWallet.getQuote();
             Transaction txn = activeWallet.createTransaction(output.toList(),fee);
-            String object = DatatypeConverter.printBase64Binary(txn.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
-            if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
-                boolean result = session.getBlockchain().addData(txn);
-                if (result) {session.getBlockchain().addPendingTxn(txn);System.out.println("Transaction Accepted");} 
-                else {System.out.println("Transaction Failed");} 
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(txn.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+                if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                    boolean result = session.getBlockchain().addData(txn);
+                    if (result) {session.getBlockchain().addPendingTxn(txn);System.out.println("Transaction Accepted");} 
+                    else {System.out.println("Transaction Failed");} 
+                }
             }
-            
         }
         else if (response.equals("10") && session.getPeer() != null && activeWallet.getBorrowContract() == null) {
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
-            BorrowContract contract = activeWallet.createBorrowContract(fee);
+            activeWallet.getQuote();
+            BorrowContract contract = activeWallet.createBorrowContract();
             String object = DatatypeConverter.printBase64Binary(contract.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+            }
+            
         }
         else if (response.equals("11") && session.getPeer() != null) {
             String[] contracts = session.getBlockFileHandler().getBorrowContracts();
@@ -342,32 +381,39 @@ public class Main {
             System.out.println("Selection?");
             Integer selection = Integer.valueOf(bufferedReader.readLine());
             System.out.println("Amount To Lend?");
-            float value = Float.valueOf(bufferedReader.readLine());
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
-            LendContract lcontract = activeWallet.createLendContract(session.getBlockFileHandler().getBorrowContract(contracts[selection]), value, fee);
-            String object = DatatypeConverter.printBase64Binary(lcontract.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
-            if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
-                boolean result = session.getBlockchain().addData(lcontract);
-                if (result) {session.getBlockchain().addPendingTxn(lcontract);System.out.println("Transaction Accepted");} 
-                else {System.out.println("Transaction Failed");} 
+            BigDecimal value = new BigDecimal(bufferedReader.readLine());
+            activeWallet.getQuote();
+            LendContract lcontract = activeWallet.createLendContract(session.getBlockFileHandler().getBorrowContract(contracts[selection]), value);
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(lcontract.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+                if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                    boolean result = session.getBlockchain().addData(lcontract);
+                    if (result) {session.getBlockchain().addPendingTxn(lcontract);System.out.println("Transaction Accepted");} 
+                    else {System.out.println("Transaction Failed");} 
+                }
             }
         }
         else if (response.equals("12") && session.getPeer() != null && activeWallet.getBorrowContract() != null && activeWallet.getStakeContract() == null) {
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
-            StakeContract contract = activeWallet.createStakeContract(fee);
-            String object = DatatypeConverter.printBase64Binary(contract.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+            activeWallet.getQuote();
+            StakeContract contract = activeWallet.createStakeContract();
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(contract.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+            }
+            
         }
         else if (response.equals("14") && session.getPeer() != null) {session.setValidation();}
 //        else if (response.equals("15") && session.getPeer() != null) {
 //            ArrayList<LendContract> contracts = activeWallet.getLendContracts();
 //            for (int i = 0; i < contracts.size(); i++) {
-//                float value = 0;
+//                BigDecimal value = 0;
 //                LendContract contract = contracts.get(i);
 //                if (contract.getLendTransaction().getOutputs().size() > 0) value = contract.getLendTransaction().getOutputs().get(0).value;
 //                System.out.println("[" + i + "]" + contract.getHash() + " " + value);
@@ -376,7 +422,7 @@ public class Main {
 //            Integer selection = Integer.valueOf(bufferedReader.readLine());
 //            LendContract contract = contracts.get(selection);
 //            System.out.println("Fee Amount?");
-//            float fee = Float.valueOf(bufferedReader.readLine());
+//            BigDecimal fee = BigDecimal.valueOf(bufferedReader.readLine());
 //            EndLendContract endcontract = activeWallet.endLendContract(contract,fee);
 //            String object = DatatypeConverter.printBase64Binary(endcontract.toBytes());
 //            JsonObject data = Json.createObjectBuilder().add("data", object).build();
@@ -385,29 +431,33 @@ public class Main {
         else if (response.equals("16") && session.getPeer() != null) {
             ArrayList<NFT> nfts = activeWallet.getNFTs();
             for (int i = 0; i < nfts.size(); i++) {
-                float value = 0;
+                BigDecimal value = BigDecimal.ZERO;
                 NFT nft = nfts.get(i);
                 System.out.println("[" + i + "]" + nft.getHash());
             }
             System.out.println("Selection?");
             Integer selection = Integer.valueOf(bufferedReader.readLine());
             NFT nft = nfts.get(selection);
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
-            ListNFT list = activeWallet.listNFT(nft, fee);
-            String object = DatatypeConverter.printBase64Binary(list.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
-            if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
-                boolean result = session.getBlockchain().addData(list);
-                if (result) {session.getBlockchain().addPendingTxn(list);System.out.println("Transaction Accepted");} 
-                else {System.out.println("Transaction Failed");} 
+            activeWallet.getQuote();
+            ListNFT list = activeWallet.listNFT(nft);
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(list.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+                if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                    boolean result = session.getBlockchain().addData(list);
+                    if (result) {session.getBlockchain().addPendingTxn(list);System.out.println("Transaction Accepted");} 
+                    else {System.out.println("Transaction Failed");} 
+                }
             }
+            
         }
         else if (response.equals("17") && session.getPeer() != null) {
             ArrayList<NFT> nfts = session.getBlockFileHandler().getListedNFTs();
             for (int i = 0; i < nfts.size(); i++) {
-                float value = 0;
+                BigDecimal value = BigDecimal.ZERO;
                 NFT nft = nfts.get(i);
                 System.out.println("[" + i + "]" + nft.getHash());
             }
@@ -415,19 +465,22 @@ public class Main {
             Integer selection = Integer.valueOf(bufferedReader.readLine());
             NFT nft = nfts.get(selection);
             System.out.println("Bid Amount?");
-            float amount = Float.valueOf(bufferedReader.readLine());
-            System.out.println("Fee Amount?");
-            float fee = Float.valueOf(bufferedReader.readLine());
-            Bid bid = activeWallet.createBid(nft, amount, fee);
-            
-            String object = DatatypeConverter.printBase64Binary(bid.toBytes());
-            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
-            if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
-                boolean result = session.getBlockchain().addData(bid);
-                if (result) {session.getBlockchain().addPendingTxn(bid);System.out.println("Transaction Accepted");} 
-                else {System.out.println("Transaction Failed");} 
+            BigDecimal amount = new BigDecimal(bufferedReader.readLine());
+            activeWallet.getQuote();
+            Bid bid = activeWallet.createBid(nft, amount);
+            System.out.println("Send Transaction (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(bid.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+                if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                    boolean result = session.getBlockchain().addData(bid);
+                    if (result) {session.getBlockchain().addPendingTxn(bid);System.out.println("Transaction Accepted");} 
+                    else {System.out.println("Transaction Failed");} 
+                }
             }
+            
         }
         else if (response.equals("18") && session.getPeer() != null) {
             HashMap<String, Integer> nfts = activeWallet.listBidsByNFT();
@@ -438,7 +491,7 @@ public class Main {
             Integer selection = Integer.valueOf(bufferedReader.readLine());
             ArrayList<Bid> bids = activeWallet.getBids((String) nfts.keySet().toArray()[selection]);
             for (int i = 0; i < bids.size(); i++) {
-                float amount = 0;
+                BigDecimal amount = BigDecimal.ZERO;
                 if (bids.get(i).getTransaction().getOutputs().size() > 0) {
                     amount = bids.get(i).getTransaction().getOutputs().get(0).value;
                 }
@@ -458,7 +511,7 @@ public class Main {
             String nftHash = (String) nfts.keySet().toArray()[selection];
             ArrayList<Bid> bids = activeWallet.getBids(nftHash);
             for (int i = 0; i < bids.size(); i++) {
-                float amount = 0;
+                BigDecimal amount = BigDecimal.ZERO;
                 if (bids.get(i).getTransaction().getOutputs().size() > 0) {
                     amount = bids.get(i).getTransaction().getOutputs().get(0).value;
                 }
@@ -467,6 +520,7 @@ public class Main {
             if (bids.size() == 0)return;
             System.out.println("Selection?");
             selection = Integer.valueOf(bufferedReader.readLine());
+            activeWallet.getQuote();
             NFTTransfer transfer = activeWallet.transferNFT(bids.get(selection), nftHash, DigestUtils.sha256Hex(bids.get(selection).getKey().toByteArray()));
             String object = DatatypeConverter.printBase64Binary(transfer.toBytes());
             JsonObject data = Json.createObjectBuilder().add("data", object).build();
@@ -501,11 +555,16 @@ public class Main {
             }
             else {session.getWebserver().stopServer();}
         }
-        
-        else if (response.equals("22")) {System.out.println(session.getValidators());}
-        else if (response.equals("23")) {System.out.println(session.getBlockchain().block);}
-        else if (response.equals("24")) {System.out.println(session.getScheduler());}
-        else if (response.equals("25")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
+        else if (response.equals("22") && session.getPeer() != null && session.getValidation()){
+            System.out.println("Current Fee: " + session.getBlockchain().getFeePerByte());
+            System.out.println("Fee Per Byte?");
+            BigDecimal fee = new BigDecimal(bufferedReader.readLine());
+            session.getBlockchain().setFee(fee);
+        }
+        else if (response.equals("23")) {System.out.println(session.getValidators());}
+        else if (response.equals("24")) {System.out.println(session.getBlockchain().block);}
+        else if (response.equals("25")) {System.out.println(session.getScheduler());}
+        else if (response.equals("26")) {session.getStats().getWalletInOuts().forEach(in -> {System.out.println(in);});}
         else if (response.equals("e")) {System.exit(0);}
     }
     

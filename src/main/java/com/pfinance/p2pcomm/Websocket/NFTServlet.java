@@ -51,6 +51,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.web3j.utils.Numeric;
+import java.math.BigDecimal;
 
 /**
  *
@@ -204,7 +205,7 @@ public class NFTServlet extends HttpServlet {
             for (int i = 0; i < outputs.size(); i++) {
                 JsonObject object = outputs.get(i).getAsJsonObject();
                 String address = object.get("address").getAsString();
-                Float value = object.get("value").getAsFloat();
+                BigDecimal value = object.get("value").getAsBigDecimal();
                 TransactionOutput output = new TransactionOutput(address,value);
                 mintFee.addOutput(output);
             }

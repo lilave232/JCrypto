@@ -28,6 +28,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.utils.Numeric;
+import java.math.BigDecimal;
 
 /**
  *
@@ -102,7 +103,7 @@ public class LendFundsServlet extends HttpServlet {
             for (int i = 0; i < outputs.size(); i++) {
                 JsonObject object = outputs.get(i).getAsJsonObject();
                 String address = object.get("address").getAsString();
-                Float value = object.get("value").getAsFloat();
+                BigDecimal value = object.get("value").getAsBigDecimal();
                 TransactionOutput output = new TransactionOutput(address,value);
                 txn.addOutput(output);
             }

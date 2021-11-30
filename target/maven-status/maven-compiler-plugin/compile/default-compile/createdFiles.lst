@@ -21,6 +21,7 @@ com/pfinance/p2pcomm/Websocket/SignatureData.class
 com/pfinance/p2pcomm/Websocket/IndexServlet.class
 com/pfinance/p2pcomm/Contracts/EndLendContract.class
 com/pfinance/p2pcomm/Websocket/PeerServlet.class
+com/pfinance/p2pcomm/Websocket/GetFeeAmount.class
 com/pfinance/p2pcomm/Wallet/Wallet$1.class
 com/pfinance/p2pcomm/Session.class
 com/pfinance/p2pcomm/Blockchain/Blockchain$1.class

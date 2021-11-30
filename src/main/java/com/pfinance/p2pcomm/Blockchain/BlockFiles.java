@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -217,22 +218,22 @@ public class BlockFiles {
         return (StakeContract) handler.readObject(session.getPath() + "/contracts/stake/" + hash + "/contract");
     }
     
-    public float getBorrowedBalance(Validator validator, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+    public BigDecimal getBorrowedBalance(Validator validator, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
         StakeContract contract = getStakeContract(validator.getStakeHash(), address);
-        if (contract == null) return 0;
-        float returnValue = getBorrowBalance(contract.getBorrowContractHash(),address) + getPenaltyBalance(contract.getHash());
+        if (contract == null) return BigDecimal.ZERO;
+        BigDecimal returnValue = getBorrowBalance(contract.getBorrowContractHash(),address).add(getPenaltyBalance(contract.getHash()));
         return returnValue;
     }
     
-    public float getBorrowedBalance(Validator validator) throws IOException, FileNotFoundException, ClassNotFoundException {
+    public BigDecimal getBorrowedBalance(Validator validator) throws IOException, FileNotFoundException, ClassNotFoundException {
         StakeContract contract = getStakeContract(validator.getStakeHash());
-        if (contract == null) return 0;
-        float returnValue = getBorrowBalance(contract.getBorrowContractHash()) + getPenaltyBalance(contract.getHash());
+        if (contract == null) return BigDecimal.ZERO;
+        BigDecimal returnValue = getBorrowBalance(contract.getBorrowContractHash()).add(getPenaltyBalance(contract.getHash()));
         return returnValue;
     }
     
-    public float getBorrowBalance(String hash, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
-        float returnValue = 0;
+    public BigDecimal getBorrowBalance(String hash, String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        BigDecimal returnValue = BigDecimal.ZERO;
         FileHandler handler = new FileHandler();
         String path = this.getWalletPath(address);
         File f = new File(path + "/contracts/borrow/lentFunds");
@@ -244,13 +245,13 @@ public class BlockFiles {
         });
         for (int x = 0; x < files.length; x++) {
             UTXO utxo = loadUTXO(files[x].getPath());
-            returnValue += utxo.toFloat();
+            returnValue = returnValue.add(utxo.toFloat());
         }
         return returnValue;
     }
      
-    public float getBorrowBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
-        float returnValue = 0;
+    public BigDecimal getBorrowBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
+        BigDecimal returnValue = BigDecimal.ZERO;
         FileHandler handler = new FileHandler();
         File f = new File(session.getPath() + "/contracts/borrow/" + hash + "/lentFunds");
         File[] files = f.listFiles(new FileFilter() {
@@ -259,15 +260,16 @@ public class BlockFiles {
                 return file.isFile();
             }
         });
+        if (files == null) {return BigDecimal.ZERO;}
         for (int x = 0; x < files.length; x++) {
             UTXO utxo = loadUTXO(files[x].getPath());
-            returnValue += utxo.toFloat();
+            returnValue = returnValue.add(utxo.toFloat());
         }
         return returnValue;
     }
     
-    public float getPenaltyBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
-        float returnValue = 0;
+    public BigDecimal getPenaltyBalance(String hash) throws IOException, FileNotFoundException, ClassNotFoundException {
+        BigDecimal returnValue = BigDecimal.ZERO;
         FileHandler handler = new FileHandler();
         File f = new File(session.getPath() + "/contracts/stake/" + hash + "/penalties");
         File[] files = f.listFiles(new FileFilter() {
@@ -276,16 +278,16 @@ public class BlockFiles {
                 return file.isFile();
             }
         });
-        if (files == null) return 0;
+        if (files == null) return BigDecimal.ZERO;
         for (int x = 0; x < files.length; x++) {
             Penalty penalty = (Penalty) handler.readObject(files[x].getPath());
-            if (penalty != null) returnValue += penalty.getTransaction().sum();
+            if (penalty != null) returnValue = returnValue.add(penalty.getTransaction().sum());
         }
         return returnValue;
     }
     
-    public float getPenaltyBalance(String hash,String address) throws IOException, FileNotFoundException, ClassNotFoundException {
-        float returnValue = 0;
+    public BigDecimal getPenaltyBalance(String hash,String address) throws IOException, FileNotFoundException, ClassNotFoundException {
+        BigDecimal returnValue = BigDecimal.ZERO;
         FileHandler handler = new FileHandler();
         String path = this.getWalletPath(address);
         File f = new File(path + "/contracts/stake/penalties");
@@ -295,10 +297,10 @@ public class BlockFiles {
                 return file.isFile();
             }
         });
-        if (files == null) return 0;
+        if (files == null) return BigDecimal.ZERO;
         for (int x = 0; x < files.length; x++) {
             Penalty penalty = (Penalty) handler.readObject(files[x].getPath());
-            if (penalty != null) returnValue += penalty.getTransaction().sum();
+            if (penalty != null) returnValue = returnValue.add(penalty.getTransaction().sum());
         }
         return returnValue;
     }
@@ -517,18 +519,23 @@ public class BlockFiles {
     }
     
     public void saveStakeContract(StakeContract stakeContract) throws IOException, FileNotFoundException, ClassNotFoundException {
-        Files.createDirectories(Paths.get(session.getPath() + "/contracts/stake/" + stakeContract.getHash()));
-        FileHandler handler = new FileHandler();
-        handler.writeObject(session.getPath() + "/contracts/stake/" + stakeContract.getHash() + "/contract", stakeContract);
-        if (getWalletAddresses().contains(stakeContract.getAddress())) {
-            String path = getWalletPath(stakeContract.getAddress());
-            Files.createDirectories(Paths.get(path + "/contracts/stake"));
-            handler.writeObject(path + "/contracts/stake/contract", stakeContract);
+        try {
+            Files.createDirectories(Paths.get(session.getPath() + "/contracts/stake/" + stakeContract.getHash()));
+            FileHandler handler = new FileHandler();
+            handler.writeObject(session.getPath() + "/contracts/stake/" + stakeContract.getHash() + "/contract", stakeContract);
+            if (getWalletAddresses().contains(stakeContract.getAddress())) {
+                String path = getWalletPath(stakeContract.getAddress());
+                Files.createDirectories(Paths.get(path + "/contracts/stake"));
+                handler.writeObject(path + "/contracts/stake/contract", stakeContract);
+            }
+            Validator validator = new Validator(stakeContract.getHash(),stakeContract.getBorrowContractHash());
+            validator.setBalance(getBorrowedBalance(validator));
+            session.getValidators().addValidator(validator);
+            saveValidators();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Validator validator = new Validator(stakeContract.getHash(),stakeContract.getBorrowContractHash());
-        validator.setBalance(getBorrowedBalance(validator));
-        session.getValidators().addValidator(validator);
-        saveValidators();
+        
     }
     
     public ArrayList<TransactionOutput> getLentFunds(String hash) {
@@ -927,9 +934,13 @@ public class BlockFiles {
                     deleteUTXO(((LendContract) data).getLendTransaction());
                     saveLendContract((LendContract) data);
                 } else if (data instanceof StakeContract) {
+                    //System.out.println("SAVING STAKE CONTRACT");
                     saveStakeContract((StakeContract) data);
+                    //System.out.println("CONTRACT SAVED");
                     saveUTXO(((StakeContract) data).getValidatorCommission());
+                    //System.out.println("SAVED UTXO");
                     deleteUTXO(((StakeContract) data).getValidatorCommission());
+                    //System.out.println("DELETED UTXO");
                 } else if (data instanceof Penalty) {
                     savePenalty((Penalty) data);
                 } else if (data instanceof NFT) {

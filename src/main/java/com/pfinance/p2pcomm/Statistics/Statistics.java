@@ -64,14 +64,14 @@ public class Statistics {
                if (utxo != null) {
                     if (!utxo.getAddress().equals(address)) continue;
                     TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo.toFloat());
-                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),-utxo.toFloat());
+                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),utxo.toFloat().negate());
                     if (localInOuts.contains(txn_in)) {
                         localInOuts.get(localInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
                     } else {
                         localInOuts.add(txn_in);
                     }
                     if (localInOuts.contains(txn_out)) {
-                        localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                        localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(utxo.toFloat().negate());
                     } else {
                         localInOuts.add(txn_out);
                     }
@@ -96,14 +96,14 @@ public class Statistics {
                UTXO utxo = (UTXO) handler.readObject(files[x].getPath());
                if (utxo != null) {
                     TransactionInOut txn_in = new TransactionInOut(Long.valueOf(utxo.getTimestampIn()),utxo.getPreviousHash(),utxo.getIndex(),utxo.toFloat());
-                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),-utxo.toFloat());
+                    TransactionInOut txn_out = new TransactionInOut(Long.valueOf(utxo.getTimestampOut()),utxo.getHashOut(),utxo.getIndex(),utxo.toFloat().negate());
                    if (walletInOuts.contains(txn_in)) {
                        walletInOuts.get(walletInOuts.lastIndexOf(txn_in)).addAmount(utxo.toFloat());
                    } else {
                        walletInOuts.add(txn_in);
                    }
                    if (walletInOuts.contains(txn_out)) {
-                       walletInOuts.get(walletInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                       walletInOuts.get(walletInOuts.lastIndexOf(txn_out)).addAmount(utxo.toFloat().negate());
                    } else {
                        walletInOuts.add(txn_out);
                    }
@@ -214,9 +214,9 @@ public class Statistics {
                         UTXO utxo = (UTXO) handler.readObject(this.session.getPath() + "/utxos/" + input.previousTxnHash + "|" + input.outputIndex);
                         if (utxo != null) {
                             if (!utxo.getAddress().equals(address)) continue;
-                            TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),utxo.getIndex(),-utxo.toFloat());
+                            TransactionInOut txn_out = new TransactionInOut(Long.valueOf(((Transaction) object).getTimestamp()),((Transaction) object).getHash(),utxo.getIndex(),utxo.toFloat().negate());
                             if (localInOuts.contains(txn_out)) {
-                                localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(-utxo.toFloat());
+                                localInOuts.get(localInOuts.lastIndexOf(txn_out)).addAmount(utxo.toFloat().negate());
                             } else {
                                 localInOuts.add(txn_out);
                             }

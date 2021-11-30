@@ -12,6 +12,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -22,14 +23,14 @@ public class Validator implements Serializable {
     public final static long serialVersionUID = 3534229586728269544L;
     private String stakeHash;
     private String borrowContractHash;
-    private float balance;
+    private BigDecimal balance;
     
     public Validator(String stakeHash, String borrowContractHash) {
         this.stakeHash = stakeHash;
         this.borrowContractHash = borrowContractHash;
     }
     
-    public float getBalance() {
+    public BigDecimal getBalance() {
         return this.balance;
     }
     
@@ -41,7 +42,7 @@ public class Validator implements Serializable {
         return this.borrowContractHash;
     }
     
-    public void setBalance(float balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     } 
     

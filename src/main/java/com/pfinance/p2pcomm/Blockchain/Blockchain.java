@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ public class Blockchain {
     BlockValidation blockValidator = null;
     private HashIndex index = new HashIndex();
     private Session session = null;
-    private float totalFloat;
+    private BigDecimal totalFloat = BigDecimal.ZERO;
+    private BigDecimal feePerByte = BigDecimal.ZERO;
     private ArrayList<String> pendingUTXOs = new ArrayList<>();
     
     public Blockchain(Session session) {
@@ -58,12 +60,13 @@ public class Blockchain {
     
     public void initialize() {
         try {
+            session.setMinFee(BigDecimal.ZERO);
             Wallet wallet = this.session.getWallet();
             Key key = wallet.getKey();
             //Genesis Block 1
             if (this.index.getHashes().size() < 1) {
                 newBlock("0000000000000000",key);
-                BorrowContract bcontract = wallet.createBorrowContract(0);
+                BorrowContract bcontract = wallet.createBorrowContract();
                 addData(bcontract);
                 addBlock(this.block);
             }
@@ -71,7 +74,7 @@ public class Blockchain {
             if (this.index.getHashes().size() < 2) {
                 newBlock("0000000000000000",key);
                 wallet.loadBorrowContract();
-                LendContract lcontract = wallet.createLendContract(wallet.getBorrowContract(), 10,0);
+                LendContract lcontract = wallet.createLendContract(wallet.getBorrowContract(), new BigDecimal(10));
                 addData(lcontract);
                 addBlock(this.block);
             }
@@ -79,10 +82,11 @@ public class Blockchain {
             if (this.index.getHashes().size() < 3) {
                 newBlock("0000000000000000",key);
                 wallet.loadBorrowContract();
-                StakeContract scontract = wallet.createStakeContract(0);
+                StakeContract scontract = wallet.createStakeContract();
                 addData(scontract);
                 addBlock(this.block);
             }
+            session.minFee = null;
         } catch (Exception e) {e.printStackTrace();}
     }
     
@@ -121,7 +125,7 @@ public class Blockchain {
             System.out.println("Block Verified");
             if (block.data.get(0) instanceof Transaction) {
                 Transaction reward = (Transaction) block.data.get(0);
-                this.totalFloat += reward.sum();
+                this.totalFloat = this.totalFloat.add(reward.sum());
             }
             session.getBlockFileHandler().saveBlock(block);
             System.out.println("Block Saved");
@@ -130,8 +134,8 @@ public class Blockchain {
             saveIndex();
             System.out.println("Index Saved");
             saveFloat();
-            this.blockValidator.setStakeRequirement(this.totalFloat * (float)0.001);
-            System.out.println("Float Saved");
+            this.blockValidator.setStakeRequirement(this.totalFloat.multiply(new BigDecimal(0.001)));
+            System.out.println("BigDecimal Saved");
             System.out.println("Finished Adding New Block");
         }
         if (this.index.getHashes().size() > 3) this.blockValidator.setValidateHeader(true);
@@ -139,18 +143,36 @@ public class Blockchain {
         else this.block = null;
     }
     
+    public boolean checkFee(Object object, int size) {
+        Transaction transaction = getTransaction(object);
+        if (transaction == null) return false;
+        try {
+            BigDecimal fee = getFee(transaction);
+            if (fee.compareTo(this.feePerByte.multiply(new BigDecimal(size))) == -1) {return false;}
+            else {return true;}
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
     public boolean verifyTransaction(Object object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         if (object instanceof Transaction) {
+            if (!checkFee(object,((Transaction) object).toBytes().length))return false;
             if (this.blockValidator.verifyTransaction((Transaction) object)) {block.addData(object, getFee((Transaction) object)); return true;}
         } else if (object instanceof BorrowContract) {
+            if (!checkFee(object,((BorrowContract) object).toBytes().length))return false;
             if (this.blockValidator.verifyBorrowContract((BorrowContract) object)) {block.addData(object, getFee(((BorrowContract) object).getValidatorCommission())); return true;}
         } else if (object instanceof LendContract) {
+            if (!checkFee(object,((LendContract) object).toBytes().length))return false;
             if (this.blockValidator.verifyLendContract((LendContract) object)) {block.addData(object, getFee(((LendContract) object).getLendTransaction())); return true;}
         } else if (object instanceof StakeContract) {
+            if (this.session.getBlockFileHandler().getStakeContract(((StakeContract) object).getHash()) != null) {return false;}
+            if (!checkFee(object,((StakeContract) object).toBytes().length))return false;
             if (this.blockValidator.verifyStakeContract((StakeContract) object)) {block.addData(object, getFee(((StakeContract) object).getValidatorCommission())); return true;}
         } else if (object instanceof Penalty) {
-            if (this.blockValidator.verifyPenalty((Penalty) object)){block.addData(object, 0);return true;}
+            if (this.blockValidator.verifyPenalty((Penalty) object)){block.addData(object, BigDecimal.ZERO);return true;}
         } else if (object instanceof NFT) {
+            if (!checkFee(object,((NFT) object).toBytes().length))return false;
             if (this.blockValidator.verifyNFT((NFT) object)){block.addData(object,getFee(((NFT) object).getMintFee()));return true;}
         } else if (object instanceof NFTTransfer) {
             if (session.getBlockchain().block.data.contains(object)) return false;
@@ -165,53 +187,77 @@ public class Blockchain {
                 return true;
             }
         } else if (object instanceof EndLendContract) {
+            if (!checkFee(object,((EndLendContract) object).toBytes().length))return false;
             if (this.blockValidator.verifyEndLendContract((EndLendContract)object)) {block.addData(object, getFee(((EndLendContract) object).getValidatorCommission()));return true;}
         } else if (object instanceof ListNFT) {
+            if (!checkFee(object,((ListNFT) object).toBytes().length))return false;
             if (this.session.getBlockFileHandler().getPendingObject(((ListNFT) object).getNFTHash()) != null) return false;
             if (this.blockValidator.verifyListNFT((ListNFT)object)) {block.addData(object, getFee(((ListNFT) object).getValidatorCommission()));return true;}
         } else if (object instanceof Bid) {
+            if (!checkFee(object,((Bid) object).toBytes().length))return false;
             if (this.session.getBlockFileHandler().getPendingObject(((Bid) object).getContractHash()) != null) return false;
-            if (this.blockValidator.verifyBid((Bid)object)) {block.addData(object, 0); return true;}
+            if (this.blockValidator.verifyBid((Bid)object)) {block.addData(object, BigDecimal.ZERO); return true;}
         } else if (object instanceof DelistNFT) {
             if (this.session.getBlockFileHandler().getPendingObject(((DelistNFT) object).getNFTHash()) != null) return false;
-            if (this.blockValidator.verifyDeListNFT((DelistNFT)object)) {block.addData(object, 0); return true;}
+            if (this.blockValidator.verifyDeListNFT((DelistNFT)object)) {block.addData(object, BigDecimal.ZERO); return true;}
         }
         return false;
     }
     
-    public float getHeldFee(Transaction transaction, String contractHash) throws IOException, ClassNotFoundException {
-        float inputSum = sumHeldInputs(transaction.getInputs(),contractHash);
-        float fee = inputSum - transaction.sum();
+    public BigDecimal getHeldFee(Transaction transaction, String contractHash) throws IOException, ClassNotFoundException {
+        BigDecimal inputSum = sumHeldInputs(transaction.getInputs(),contractHash);
+        BigDecimal fee = inputSum.subtract(transaction.sum());
         return fee;
     }
     
-    public float sumHeldInputs(ArrayList<TransactionInput> inputs, String contractHash) throws IOException, ClassNotFoundException, FileNotFoundException {
-        float inputSum = 0;
+    public BigDecimal sumHeldInputs(ArrayList<TransactionInput> inputs, String contractHash) throws IOException, ClassNotFoundException, FileNotFoundException {
+        BigDecimal inputSum = BigDecimal.ZERO;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/held_utxos/" + contractHash + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
-            if (utxo == null) return 0;
-            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
+            if (utxo == null) return BigDecimal.ZERO;
+            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return BigDecimal.ZERO;
             //if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
-            inputSum += utxo.toFloat();
+            inputSum = inputSum.add(utxo.toFloat());
         }
         return inputSum;
     }
     
+    public Transaction getTransaction (Object object) {
+        if (object instanceof Transaction) {
+            return (Transaction)object;
+        } else if (object instanceof BorrowContract) {
+            return ((BorrowContract) object).getValidatorCommission();
+        } else if (object instanceof LendContract) {
+            return ((LendContract) object).getLendTransaction();
+        } else if (object instanceof StakeContract) {
+            return ((StakeContract) object).getValidatorCommission();
+        } else if (object instanceof NFT) {
+            return ((NFT) object).getMintFee();
+        } else if (object instanceof Bid) {
+            return ((Bid) object).getTransaction();
+        } else if (object instanceof EndLendContract) {
+            return ((EndLendContract) object).getValidatorCommission();
+        } else if (object instanceof ListNFT) {
+            return ((ListNFT) object).getValidatorCommission();
+        }
+        return null;
+    }
     
-    public float getFee(Transaction transaction) throws IOException, ClassNotFoundException {
-        float inputSum = sumInputs(transaction.getInputs());
-        float fee = inputSum - transaction.sum();
+    
+    public BigDecimal getFee(Transaction transaction) throws IOException, ClassNotFoundException {
+        BigDecimal inputSum = sumInputs(transaction.getInputs());
+        BigDecimal fee = inputSum.subtract(transaction.sum());
         return fee;
     }
     
-    public float sumInputs(ArrayList<TransactionInput> inputs) throws IOException, ClassNotFoundException, FileNotFoundException {
-        float inputSum = 0;
+    public BigDecimal sumInputs(ArrayList<TransactionInput> inputs) throws IOException, ClassNotFoundException, FileNotFoundException {
+        BigDecimal inputSum = BigDecimal.ZERO;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
-            if (utxo == null) return 0;
-            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return 0;
-            //if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return 0;
-            inputSum += utxo.toFloat();
+            if (utxo == null) return BigDecimal.ZERO;
+            //if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return BigDecimal.ZERO;
+            //if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return BigDecimal.ZERO;
+            inputSum = inputSum.add(utxo.toFloat());
         }
         return inputSum;
     }
@@ -278,15 +324,15 @@ public class Blockchain {
                 }
             });
             if (files != null) {
-                HashMap<String,Float> outputValues = new HashMap<>();
+                HashMap<String,BigDecimal> outputValues = new HashMap<>();
                 for (File file : files) {
                     LendContract contract = this.session.getBlockFileHandler().loadLendContract(file.getPath());
                     if (contract != null) {
                         if (contract.getLendTransaction().getOutputs().size() > 0) {
                             Validator user = session.getValidators().getValidator(stakeContract.getHash());
                             TransactionOutput loutput = contract.getLendTransaction().getOutputs().get(0);
-                            TransactionOutput baseOutput = new TransactionOutput(contract.getLenderAddress(),-(loutput.value/user.getBalance())*session.getBlockValidator().getReward(timestamp));
-                            outputValues.put(baseOutput.address, outputValues.getOrDefault(baseOutput.address, (float)0) + baseOutput.value);
+                            TransactionOutput baseOutput = new TransactionOutput(contract.getLenderAddress(),(loutput.value.divide(user.getBalance())).multiply(session.getBlockValidator().getReward(timestamp)).negate());
+                            outputValues.put(baseOutput.address, outputValues.getOrDefault(baseOutput.address, BigDecimal.ZERO).add(baseOutput.value));
                         }
                     }
                 }
@@ -304,8 +350,8 @@ public class Blockchain {
     public void loadAllBlocks() throws IOException, FileNotFoundException, ClassNotFoundException {
         boolean loadFloat = true;
         Object obj = new FileHandler().readObject(session.getPath() + "/totalFloat");
-        if (obj instanceof Float) {
-            this.totalFloat = (Float)obj;
+        if (obj instanceof BigDecimal) {
+            this.totalFloat = (BigDecimal)obj;
             loadFloat = false;
         }
         ArrayList<HashEntry> not_found = new ArrayList<>();
@@ -315,7 +361,7 @@ public class Blockchain {
                 if (loadFloat == false) continue;
                 if (b.data.get(0) instanceof Transaction) {
                     Transaction reward = (Transaction) b.data.get(0);
-                    this.totalFloat += reward.sum();
+                    this.totalFloat = this.totalFloat.add(reward.sum());
                 }
             } else {
                 not_found.add(entry);
@@ -323,7 +369,7 @@ public class Blockchain {
         }
         this.index.removeAllHashes(not_found);
         saveIndex();
-        this.blockValidator.setStakeRequirement(this.totalFloat * (float)0.001);
+        this.blockValidator.setStakeRequirement(this.totalFloat.multiply(new BigDecimal(0.001)));
     }
     
     public void saveIndex() {
@@ -352,9 +398,12 @@ public class Blockchain {
         return returnString.toString();
     }
     
+    public void setFee(BigDecimal fee) {this.feePerByte = fee;session.minFee = fee;System.out.println("Fee Set To: " + this.feePerByte);}
+    public BigDecimal getFeePerByte() {return this.feePerByte;}
+    
     public Integer size() {return this.index.getHashes().size();}
     public HashIndex getHashIndex() {return this.index;}
     public ArrayList<String> getPendingUTXOs() {return this.pendingUTXOs;}
-    public Float getTotalFloat() {return this.totalFloat;}
+    public BigDecimal getTotalFloat() {return this.totalFloat;}
     public void setHashIndex(HashIndex index) throws IOException {this.index = index; saveIndex();}
 }

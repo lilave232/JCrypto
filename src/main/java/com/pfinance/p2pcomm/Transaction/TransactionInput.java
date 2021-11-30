@@ -56,4 +56,10 @@ public class TransactionInput implements Serializable {
         try(ObjectOutputStream outputStream = new ObjectOutputStream(out)) {outputStream.writeObject(this);}
         return out.toByteArray();
     }
+    
+    public byte[] toBytes() throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try(ObjectOutputStream outputStream = new ObjectOutputStream(out)) {outputStream.writeObject(this);}
+        return out.toByteArray();
+    } 
 }

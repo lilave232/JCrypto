@@ -154,6 +154,10 @@ public class WebServer extends Thread {
             servletHolder = new ServletHolder(airDrop);
             servletContextHandler.addServlet(servletHolder, "/airDrop");
             
+            GetFeeAmount newFeeAmount = new GetFeeAmount(this.session);
+            servletHolder = new ServletHolder(newFeeAmount);
+            servletContextHandler.addServlet(servletHolder, "/getFee");
+            
             // Default Servlet (always last, always named "default")
             ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
             //holderDefault.setInitParameter("resourceBase", baseUri.toASCIIString() + "static/");

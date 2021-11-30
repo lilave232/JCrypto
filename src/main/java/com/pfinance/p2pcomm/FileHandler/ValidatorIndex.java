@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -18,14 +19,14 @@ import java.util.ArrayList;
 public class ValidatorIndex implements Serializable {
     private ArrayList<Validator> validators = new ArrayList<>();
     
-    public ArrayList<Validator> getValidators(float amount) {
+    public ArrayList<Validator> getValidators(BigDecimal amount) {
         ArrayList<Validator> returnValue = new ArrayList<>();
         for (Validator validator : this.validators) {
-            if (Float.compare(validator.getBalance(), amount) >= 0) {
+            if (validator.getBalance().compareTo(amount) >= 0) {
                 returnValue.add(validator);
             }
         }
-        return this.validators;
+        return returnValue;
     }
     
     public ValidatorIndex() {

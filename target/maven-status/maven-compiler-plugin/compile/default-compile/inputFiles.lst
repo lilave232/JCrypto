@@ -9,6 +9,7 @@
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Blockchain/BlockValidation.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/P2P/Peer/PeerThread.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Miner/Miner.java
+/Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/GetFeeAmount.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Transaction/Transaction.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Websocket/WebSocketEndpoint.java
 /Users/averypozzobon/NetBeansProjects/P2PComm/src/main/java/com/pfinance/p2pcomm/Contracts/ListNFT.java

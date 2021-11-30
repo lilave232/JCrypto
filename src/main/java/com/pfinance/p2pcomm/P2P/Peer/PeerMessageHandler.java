@@ -138,6 +138,10 @@ public class PeerMessageHandler {
                         //ADD PENALTY
                     }
                 }
+                case Message.RECVQUOTE -> {
+                    BigDecimal fee = data.getJsonNumber("data").bigDecimalValue();
+                    session.setMinFee(fee);
+                }
             }
         }
     }

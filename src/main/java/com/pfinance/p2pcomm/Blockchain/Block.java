@@ -15,6 +15,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import com.pfinance.p2pcomm.Transaction.*;
 import com.pfinance.p2pcomm.Contracts.*;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
+import java.math.BigDecimal;
 
 /**
  *
@@ -39,24 +40,24 @@ public class Block implements Serializable {
         //Add Base Transaction
         Transaction baseTransaction = new Transaction();
         TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Base"),0,DigestUtils.sha256("Base"),null);
-        Float reward = (float)(int) (20 * (1/Math.max(2*((int)(((Long.valueOf(this.timestamp)/1000) - 1577836800)/315360000)),1)));
-        if (baseOutput.isEmpty()) {baseOutput.add(new TransactionOutput(address,(float)reward));}
+        BigDecimal reward = new BigDecimal((int) (20 * (1/Math.max(2*((int)(((Long.valueOf(this.timestamp)/1000) - 1577836800)/315360000)),1))));
+        if (baseOutput.isEmpty()) {baseOutput.add(new TransactionOutput(address,(BigDecimal)reward));}
         for (TransactionOutput output : baseOutput) {baseTransaction.addOutput(output);}
         baseTransaction.addInput(baseInput);
-        addData(baseTransaction,0);
+        addData(baseTransaction,BigDecimal.ZERO);
     }
     
-    public void addData(Object entry, float fee) {
+    public void addData(Object entry, BigDecimal fee) {
         this.data.add(entry);
         updateReward(fee);
         this.hash = hashBlock();
     }
     
-    public void updateReward(float fee) {
+    public void updateReward(BigDecimal fee) {
         Transaction original = (Transaction) this.data.get(0);
-        float value = original.sum();
+        BigDecimal value = original.sum();
         for (TransactionOutput output : original.getOutputs()) {
-            output.value += fee * ((output.value) / value);
+            output.value = output.value.add(fee.multiply((output.value.divide(value))));
         }
     }
     

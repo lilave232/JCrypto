@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -173,7 +174,7 @@ public class NFTBidServlet  extends HttpServlet {
             for (int i = 0; i < outputs.size(); i++) {
                 JsonObject object = outputs.get(i).getAsJsonObject();
                 String address = object.get("address").getAsString();
-                Float value = object.get("value").getAsFloat();
+                BigDecimal value = object.get("value").getAsBigDecimal();
                 TransactionOutput output = new TransactionOutput(address,value);
                 bidTransaction.addOutput(output);
             }

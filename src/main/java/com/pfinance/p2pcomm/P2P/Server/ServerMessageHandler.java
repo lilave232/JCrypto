@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import javax.json.Json;
@@ -114,7 +115,7 @@ public class ServerMessageHandler {
                      
                             Validator validator = session.getValidators().getValidator(vote.getStakeHash());
                             if (validator == null) return;
-                            if (Float.compare(validator.getBalance(), session.getBlockValidator().getStakeRequirement()) < 0) return;
+                            if (validator.getBalance().compareTo(session.getBlockValidator().getStakeRequirement()) < 0) return;
                             if (!vote.getHash().equals(DigestUtils.sha256Hex(vote.getDate() + String.valueOf(vote.getVote()) + vote.getAddress() + vote.getStakeHash()))) return;
                             if (!vote.getAddress().equals(DigestUtils.sha256Hex(vote.getKey().toByteArray()))) return;
                             if (!Cryptography.verify(vote.getSignature(), vote.getHash().getBytes(), vote.getKey())) return;
@@ -149,6 +150,12 @@ public class ServerMessageHandler {
                                 session.getBlockchain().addData(penalty);
                             }
                         }
+                    }
+                }
+                case Message.GETQUOTE -> {
+                    if (session.getValidation()) {
+                        data = Json.createObjectBuilder().add("data", session.getBlockchain().getFeePerByte()).build();
+                        thread.sendMessage(Message.RECVQUOTE,data);
                     }
                 }
             }

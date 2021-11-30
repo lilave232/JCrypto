@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -47,10 +48,10 @@ public class Transaction implements Serializable {
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
     
-    public float sum() {
-        float sumValue = 0;
+    public BigDecimal sum() {
+        BigDecimal sumValue = BigDecimal.ZERO;
         for (TransactionOutput output : outputs) {
-            sumValue += output.value;
+            sumValue = sumValue.add(output.value);
         }
         return sumValue;
     }

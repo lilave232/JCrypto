@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -59,6 +60,7 @@ public class Session {
     private Miner miner = new Miner(this);
     private boolean chainDownloaded = false;
     private WebServer webserver = null;
+    public BigDecimal minFee = null;
     
     public Session() {
         
@@ -154,7 +156,7 @@ public class Session {
             this.validation = false;
             return;
         }
-        if (user.getBalance() < blockValidator.getStakeRequirement()) {
+        if (user.getBalance().compareTo(blockValidator.getStakeRequirement()) == -1) {
             miner.stopMiner();
             this.validation = false;
             return;
@@ -175,7 +177,7 @@ public class Session {
             this.validation = false;
             return this.validation;
         }
-        if (user.getBalance() < blockValidator.getStakeRequirement()) {
+        if (user.getBalance().compareTo(blockValidator.getStakeRequirement()) == -1) {
             this.validation = false;
             return this.validation;
         }
@@ -190,12 +192,23 @@ public class Session {
         if (activeWallet.getStakeContract() == null) {return false;}
         Validator user = this.validators.getValidator(activeWallet.getStakeContract().getHash());
         if (user == null) {return false;}
-        if (user.getBalance() < blockValidator.getStakeRequirement()) {return false;}
+        if (user.getBalance().compareTo(blockValidator.getStakeRequirement()) == -1) {return false;}
         return true;
     }
     
     public void setValidators(ValidatorIndex validator) {this.validators = validator;}
     public ValidatorIndex getValidators() {return this.validators;}
+    
+    public void setMinFee(BigDecimal fee) {
+        if (this.minFee == null) {
+            this.minFee = fee;
+        }
+        if (fee.compareTo(this.minFee) == -1) {
+            this.minFee = fee;
+        }
+    }
+    
+    public BigDecimal getMinFee() {return this.minFee;}
     
     public Scheduler getScheduler() {return this.scheduler;}
     public Miner getMiner() {return this.miner;}

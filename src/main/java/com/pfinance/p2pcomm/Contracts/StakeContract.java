@@ -38,7 +38,7 @@ public class StakeContract implements Serializable {
             this.inceptionDate = time;
             this.borrowContractHash = borrowContractHash;
             this.validatorCommission = validatorCommission;
-            this.hash = DigestUtils.sha256Hex(this.inceptionDate + this.borrowContractHash + this.validatorCommission.toString());
+            this.hash = DigestUtils.sha256Hex(this.inceptionDate + this.borrowContractHash + this.validatorCommission.getHash());
             this.signature = Cryptography.sign(this.hash.getBytes(),key);
             this.key = key.getPublicKey();
             this.address = DigestUtils.sha256Hex(key.getPublicKey().toByteArray());

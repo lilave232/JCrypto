@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.AbstractMap;
@@ -84,9 +85,9 @@ public class IndexServlet extends HttpServlet {
         */
     }
     
-    public AbstractMap.SimpleEntry<ArrayList<UTXO>,Float> getUsableBalance(String address) {
+    public AbstractMap.SimpleEntry<ArrayList<UTXO>,BigDecimal> getUsableBalance(String address) {
         try {
-            float usableBalance = 0;
+            BigDecimal usableBalance = BigDecimal.ZERO;
             ArrayList<UTXO> utxos = new ArrayList<UTXO>();
             File f = new File(session.getPath() + "/utxos/");
             File[] files = f.listFiles(new FileFilter() {
@@ -100,7 +101,7 @@ public class IndexServlet extends HttpServlet {
                     UTXO utxo = session.getBlockFileHandler().loadUTXO(file.getPath());
                     if (utxo.getAddress().equals(address)) {
                         if (!session.getBlockchain().getPendingUTXOs().contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) {
-                            usableBalance += utxo.toFloat();
+                            usableBalance = usableBalance.add(utxo.toFloat());
                             utxos.add(utxo);
                         }
                     }   
@@ -109,7 +110,7 @@ public class IndexServlet extends HttpServlet {
             
             return new AbstractMap.SimpleEntry<>(utxos, usableBalance);
         } catch (Exception e) {
-            return new AbstractMap.SimpleEntry<>(new ArrayList<UTXO>(), (float)0);
+            return new AbstractMap.SimpleEntry<>(new ArrayList<UTXO>(), BigDecimal.ZERO);
         }
         
     }
@@ -130,8 +131,8 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-            AbstractMap.SimpleEntry<ArrayList<UTXO>,Float> usableBalance = getUsableBalance(request.getParameter("address"));
-            float balance = usableBalance.getValue();
+            AbstractMap.SimpleEntry<ArrayList<UTXO>,BigDecimal> usableBalance = getUsableBalance(request.getParameter("address"));
+            BigDecimal balance = usableBalance.getValue();
             ArrayList<UTXO> utxos = usableBalance.getKey();
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

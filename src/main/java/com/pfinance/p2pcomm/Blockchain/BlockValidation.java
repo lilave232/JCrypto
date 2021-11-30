@@ -22,6 +22,7 @@ import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Wallet.*;
 import com.pfinance.p2pcomm.Session;
+import java.math.BigDecimal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
@@ -31,11 +32,11 @@ import org.apache.commons.codec.binary.Hex;
  * @author averypozzobon
  */
 public class BlockValidation {
-    float stakeRequirement = (float) 10;
+    BigDecimal stakeRequirement = new BigDecimal(10);
     boolean validateHeader = false;
     Session session = null;
     ArrayList<String> blockUtxosUsed = new ArrayList<>();
-    float reward = 0;
+    BigDecimal reward = BigDecimal.ZERO;
             
     public BlockValidation(Session session) {
         this.session = session;
@@ -43,7 +44,7 @@ public class BlockValidation {
         //this.stakeRequirement = (float) (session.getBlockchain().getTotalFloat() * 0.001);
     }
     
-    public void setStakeRequirement(Float value) {
+    public void setStakeRequirement(BigDecimal value) {
         this.stakeRequirement = value;
     }
     
@@ -51,7 +52,7 @@ public class BlockValidation {
         synchronized (this.session) {
             System.out.println(String.valueOf(System.currentTimeMillis()) + ": Validating block " + block.getHash());
             blockUtxosUsed = new ArrayList<String>();
-            reward = 0;
+            reward = BigDecimal.ZERO;
             try {
                 if (validateHeader) {
                     if (session.getPeer().getHandler().isRequested(block.getHash())) {}
@@ -107,10 +108,10 @@ public class BlockValidation {
     
     public boolean verifyBase(Transaction transaction) {
         try {
-            reward += getReward(transaction.getTimestamp());
+            reward = getReward(transaction.getTimestamp()).add(reward);
             if (!transaction.getInputs().get(0).previousTxnHash.equals(DigestUtils.sha256Hex("Base"))
                 || !transaction.getInputs().get(0).outputIndex.equals(0)
-                || Float.compare(transaction.sum(), reward) != 0) {return false;}
+                || reward.compareTo(transaction.sum()) != 0) {return false;}
             return true;
         } catch (Exception e) {e.printStackTrace();return false;}
     }
@@ -118,16 +119,16 @@ public class BlockValidation {
     public boolean verifyTransaction(Transaction transaction) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         ArrayList<TransactionInput> inputs = transaction.getInputs();
         ArrayList<TransactionOutput> outputs = transaction.getOutputs();
-        float inputSum = 0;
+        BigDecimal inputSum = BigDecimal.ZERO;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
             if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return false;
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
-            inputSum += utxo.toFloat();
+            inputSum = inputSum.add(utxo.toFloat());
         }
-        reward += inputSum - transaction.sum();
-        //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
+        reward = reward.add(inputSum.subtract(transaction.sum()));
+        //if (BigInteger.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
@@ -242,16 +243,16 @@ public class BlockValidation {
         //System.out.println("Hash Equal");
         ArrayList<TransactionInput> inputs = bid.getTransaction().getInputs();
         ArrayList<TransactionOutput> outputs = bid.getTransaction().getOutputs();
-        float inputSum = 0;
+        BigDecimal inputSum = BigDecimal.ZERO;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/held_utxos/" + bid.getContractHash() + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
-            inputSum += utxo.toFloat();
+            inputSum = inputSum.add(utxo.toFloat());
         }
         //System.out.println("Inputs Verified");
-        reward += inputSum - bid.getTransaction().sum();
-        //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
+        reward = reward.add(inputSum.subtract(bid.getTransaction().sum()));
+        //if (BigInteger.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/held_utxos/" + bid.getContractHash() + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
@@ -278,16 +279,16 @@ public class BlockValidation {
         //System.out.println("Hash Equal");
         ArrayList<TransactionInput> inputs = bid.getTransaction().getInputs();
         ArrayList<TransactionOutput> outputs = bid.getTransaction().getOutputs();
-        float inputSum = 0;
+        BigDecimal inputSum = BigDecimal.ZERO;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
-            inputSum += utxo.toFloat();
+            inputSum = inputSum.add(utxo.toFloat());
         }
         //System.out.println("Inputs Verified");
         //reward += inputSum - bid.getTransaction().sum();
-        //if (Float.compare(inputSum, transaction.sum()) != 0) return false;
+        //if (BigInteger.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (blockUtxosUsed.contains(utxo.getPreviousHash() + "|" + utxo.getIndex())) return false;
@@ -325,7 +326,7 @@ public class BlockValidation {
     
     public boolean verifyStakeContract(StakeContract contract) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         BorrowContract bcontract = session.getBlockFileHandler().getBorrowContract(contract.getBorrowContractHash());
-        String hash = DigestUtils.sha256Hex(contract.getInceptionDate() + contract.getBorrowContractHash() + contract.getValidatorCommission());
+        String hash = DigestUtils.sha256Hex(contract.getInceptionDate() + contract.getBorrowContractHash() + contract.getValidatorCommission().getHash());
         if (!contract.getHash().equals(hash)) return false;
         if (bcontract == null) return false;
         if (!verifyTransaction(contract.getValidatorCommission())) return false;
@@ -369,16 +370,16 @@ public class BlockValidation {
     public boolean verifyPenaltyPending(Penalty penalty) throws IOException, FileNotFoundException, ClassNotFoundException {
         StakeContract contract = session.getBlockFileHandler().getStakeContract(penalty.getStakeHash());
         if (contract == null) return false;
-        float reward = getReward(penalty.getTimestamp());
+        BigDecimal reward = getReward(penalty.getTimestamp());
         if (!penalty.getTransaction().getInputs().get(0).previousTxnHash.equals(DigestUtils.sha256Hex("Penalty"))) return false;
         if (!penalty.getTransaction().getInputs().get(0).outputIndex.equals(0)) return false;
-        if (Float.compare(penalty.getTransaction().sum(), -reward) != 0) return false;
+        if (penalty.getTransaction().sum().compareTo(reward) != 0) return false;
         ArrayList<TransactionOutput> checkOutputs = session.getBlockchain().generatePenaltyOutputs(contract,penalty.getTimestamp());
         if (!checkOutputs.equals(penalty.getTransaction().getOutputs())) return false;
         return true;
     }
     
     public void setValidateHeader(boolean x) {this.validateHeader = x;}
-    public float getStakeRequirement() {return this.stakeRequirement;}
-    public float getReward(String timestamp) {return (float)(int) (20 * (1/Math.max(2*((int)(((Long.valueOf(timestamp)/1000) - 1577836800)/315360000)),1)));}
+    public BigDecimal getStakeRequirement() {return this.stakeRequirement;}
+    public BigDecimal getReward(String timestamp) {return new BigDecimal((int) (20 * (1/Math.max(2*((int)(((Long.valueOf(timestamp)/1000) - 1577836800)/315360000)),1))));}
 }

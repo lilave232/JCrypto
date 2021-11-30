@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -101,7 +102,7 @@ public class TransferNFTServlet extends HttpServlet {
             for (int i = 0; i < outputs.size(); i++) {
                 JsonObject object = outputs.get(i).getAsJsonObject();
                 String address = object.get("address").getAsString();
-                Float value = object.get("value").getAsFloat();
+                BigDecimal value = object.get("value").getAsBigDecimal();
                 TransactionOutput output = new TransactionOutput(address,value);
                 saleTransaction.addOutput(output);
             }

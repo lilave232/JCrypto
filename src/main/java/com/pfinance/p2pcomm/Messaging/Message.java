@@ -27,4 +27,6 @@ public class Message {
     public static final int BROADCASTTXNPENDING = 14;
     public static final int REQUESTPENDING = 15;
     public static final int PENALTYASSESSED = 16;
+    public static final int GETQUOTE = 17;
+    public static final int RECVQUOTE = 18;
 }

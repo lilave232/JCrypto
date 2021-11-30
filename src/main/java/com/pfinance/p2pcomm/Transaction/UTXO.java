@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -68,7 +69,7 @@ public class UTXO implements Serializable {
     public String getHashOut() {return this.hash_out;}
     public Integer getIndex() {return this.index;}
     public String getAddress() {return this.output.address;}
-    public float toFloat() {return this.output.value;}
+    public BigDecimal toFloat() {return this.output.value;}
     
     @Override
     public String toString() {
