@@ -203,7 +203,7 @@ public class Statistics {
                 return file.isFile();
             }
         });
-        if (files == null) new ArrayList<>();
+        if (files == null) return new ArrayList<>();
         for (File file : files) {
             FileHandler handler = new FileHandler();
             try {
