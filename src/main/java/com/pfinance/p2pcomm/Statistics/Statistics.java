@@ -145,7 +145,7 @@ public class Statistics {
                 return file.isFile();
             }
         });
-        if (files == null) new ArrayList<>();
+        if (files == null) return new ArrayList<>();
         for (int x = 0; x < files.length; x++) {
             FileHandler handler = new FileHandler();
             try {
@@ -172,7 +172,7 @@ public class Statistics {
                 return file.isFile();
             }
         });
-        if (files == null) new ArrayList<>();
+        if (files == null) return new ArrayList<>();
         for (File file : files) {
             FileHandler handler = new FileHandler();
             try {
