@@ -131,43 +131,44 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-            AbstractMap.SimpleEntry<ArrayList<UTXO>,BigDecimal> usableBalance = getUsableBalance(request.getParameter("address"));
-            BigDecimal balance = usableBalance.getValue();
-            ArrayList<UTXO> utxos = usableBalance.getKey();
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            String returnValue = "";
-            returnValue += "{\"Usable_Balance\":" + balance + ",";
-            ArrayList<TransactionInOut> transactions = session.getStats().getWalletInOuts(request.getParameter("address"));
-            returnValue += "\"Transactions\":[";
-            
-            for (int i = 0; i < transactions.size(); i++) {
-                returnValue += "{\"date_string\":\"" + transactions.get(i).getDateToString() + "\""
-                                            + ",\"type\":" + transactions.get(i).getType()
-                                            + ",\"hash\":\"" + transactions.get(i).getHash() + "\""
-                                            + ",\"output\":" + transactions.get(i).getOutput()
-                                            + ",\"amount\":" + transactions.get(i).getAmount()
-                                            + "}";
-                if (i < transactions.size()-1) {
-                    returnValue += ",";
-                }
+        AbstractMap.SimpleEntry<ArrayList<UTXO>,BigDecimal> usableBalance = getUsableBalance(request.getParameter("address"));
+        BigDecimal balance = usableBalance.getValue();
+        ArrayList<UTXO> utxos = usableBalance.getKey();
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String returnValue = "";
+        returnValue += "{\"Usable_Balance\":" + balance + ",";
+        ArrayList<TransactionInOut> transactions = session.getStats().getWalletInOuts(request.getParameter("address"));
+        returnValue += "\"Transactions\":[";
+
+        for (int i = 0; i < transactions.size(); i++) {
+            returnValue += "{\"date_string\":\"" + transactions.get(i).getDateToString() + "\""
+                                        + ",\"type\":" + transactions.get(i).getType()
+                                        + ",\"hash\":\"" + transactions.get(i).getHash() + "\""
+                                        + ",\"output\":" + transactions.get(i).getOutput()
+                                        + ",\"amount\":" + transactions.get(i).getAmount()
+                                        + "}";
+            if (i < transactions.size()-1) {
+                returnValue += ",";
             }
-            returnValue += "],";
-            
-            returnValue += "\"UTXOS\":[";
-            for (int i = 0; i < utxos.size(); i++) {
-                returnValue += "{\"hash\":\"" + utxos.get(i).getPreviousHash() + "\""
-                                            + ",\"output\":" + utxos.get(i).getIndex()
-                                            + ",\"amount\":" + utxos.get(i).toFloat()
-                                            + "}";
-                if (i < utxos.size()-1) {
-                    returnValue += ",";
-                }
+        }
+        returnValue += "],";
+
+        returnValue += "\"UTXOS\":[";
+        for (int i = 0; i < utxos.size(); i++) {
+            returnValue += "{\"hash\":\"" + utxos.get(i).getPreviousHash() + "\""
+                                        + ",\"output\":" + utxos.get(i).getIndex()
+                                        + ",\"amount\":" + utxos.get(i).toFloat()
+                                        + "}";
+            if (i < utxos.size()-1) {
+                returnValue += ",";
             }
-            
-            returnValue += "]}";
-            response.getWriter().print(returnValue);
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().close();
+        }
+        
+        returnValue += "]}";
+
+        response.getWriter().print(returnValue);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.getWriter().close();
     }
 }

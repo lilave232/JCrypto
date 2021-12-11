@@ -17,6 +17,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import org.apache.commons.codec.digest.DigestUtils;
 
 /**
  *
@@ -43,7 +44,7 @@ public class UTXO implements Serializable {
     
     public TransactionInput getInput(Key key) {
         try {
-            byte[] signature = Cryptography.sign(this.output.address.getBytes(),key.getKey());
+            byte[] signature = Cryptography.sign(DigestUtils.sha256Hex(this.hash + this.index.toString()).getBytes(),key.getKey());
             TransactionInput input = new TransactionInput(this.hash,this.index,signature,key.getKey().getPublicKey());
             return input;
         } catch (Exception e) {

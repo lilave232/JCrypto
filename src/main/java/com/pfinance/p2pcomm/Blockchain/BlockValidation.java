@@ -123,7 +123,7 @@ public class BlockValidation {
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
-            if (!Cryptography.verify(input.outputSignature, utxo.getAddress().getBytes(),input.getKey())) return false;
+            if (!Cryptography.verify(input.outputSignature, DigestUtils.sha256Hex(utxo.getPreviousHash() + utxo.getIndex().toString()).getBytes(),input.getKey())) return false;
             if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum = inputSum.add(utxo.toFloat());
         }

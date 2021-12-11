@@ -314,7 +314,7 @@ public class BlockFiles {
         int index = 0;
         FileHandler handler = new FileHandler();
         for (TransactionOutput output : transaction.getOutputs()) {
-            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),index,null);
+            UTXO utxo = new UTXO(output, transaction.getTimestamp(),transaction.getHash(),index,null);
             if (address.equals(output.address)) {
                 String path = this.getWalletPath(output.address);
                 Files.createDirectories(Paths.get(path + "/utxos/"));
@@ -464,7 +464,7 @@ public class BlockFiles {
         FileHandler handler = new FileHandler();
         for (int i = 0; i < transaction.getOutputs().size(); i++) {
             TransactionOutput output = transaction.getOutputs().get(i);
-            UTXO utxo = new UTXO(output,transaction.getTimestamp(),transaction.getHash(),i,null);
+            UTXO utxo = new UTXO(output, transaction.getTimestamp(),transaction.getHash(),i,null);
             if (i == 0 && output.address.equals(contract.getBorrowerAddress())) {   
                 //IF YOU ARE THE BORROWER
                 if (address.equals(output.address)) {
