@@ -16,6 +16,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import com.pfinance.p2pcomm.Contracts.NFT;
 import com.pfinance.p2pcomm.Contracts.NFTTransfer;
+import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.FileHandler.HashIndex;
 import com.pfinance.p2pcomm.Messaging.Message;
@@ -160,13 +161,25 @@ public class NFTBidServlet  extends HttpServlet {
             jsonObject = jsonObject.get("transaction").getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction bidTransaction = new Transaction(jsonObject.get("timestamp").getAsString());
+            byte[] txnSignature = new byte[65];
+            if (jsonObject.get("signature").getAsJsonObject().get("v") == null) {
+                txnSignature = Cryptography.deriveSignature(jsonObject.get("signature").getAsJsonObject(), jsonObject.get("signature").getAsJsonObject().get("msg").getAsString().getBytes());
+                if (txnSignature == null) {
+                    System.out.println("ID Not Found");
+                    System.out.println("Transaction Failed");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().close();
+                }
+            } else {
+                txnSignature = Cryptography.generateSignatureRSV(jsonObject.get("signature").getAsJsonObject());
+            }
+            Transaction bidTransaction = new Transaction(jsonObject.get("timestamp").getAsString(), new BigInteger(jsonObject.get("signature").getAsJsonObject().get("public").getAsString()),txnSignature);
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();
                 Integer index = object.get("outputIndex").getAsInt();
 
-                TransactionInput input = new TransactionInput(previousTxn,index,null,key);
+                TransactionInput input = new TransactionInput(previousTxn,index);
 
                 bidTransaction.addInput(input);
             }

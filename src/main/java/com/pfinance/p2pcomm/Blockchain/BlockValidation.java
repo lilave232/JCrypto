@@ -23,6 +23,7 @@ import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Wallet.*;
 import com.pfinance.p2pcomm.Session;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
@@ -120,14 +121,30 @@ public class BlockValidation {
         ArrayList<TransactionInput> inputs = transaction.getInputs();
         ArrayList<TransactionOutput> outputs = transaction.getOutputs();
         BigDecimal inputSum = BigDecimal.ZERO;
+        
+        String input_hash = "";
+        String output_hash = "";
+        BigDecimal transactionSum = BigDecimal.ZERO;
+
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
-            if (!Cryptography.verify(input.outputSignature, DigestUtils.sha256Hex(utxo.getPreviousHash() + utxo.getIndex().toString()).getBytes(),input.getKey())) return false;
-            if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
+            //System.out.println("UTXO Found");
+            if (!DigestUtils.sha256Hex(transaction.getKey().toByteArray()).equals(utxo.getAddress())) return false;
+            //System.out.println("Address Verified");
             inputSum = inputSum.add(utxo.toFloat());
+            input_hash += input.getHash();
         }
-        reward = reward.add(inputSum.subtract(transaction.sum()));
+        for (TransactionOutput output: outputs) {
+            output_hash += output.getHash();
+            transactionSum = transactionSum.add(output.value);
+        }
+        reward = reward.add(inputSum.subtract(transactionSum));
+        
+        if (!DigestUtils.sha256Hex(input_hash + output_hash + transaction.getTimestamp()).equals(transaction.getHash())) return false;
+        //System.out.println("Hash Verified");
+        if (!Cryptography.verify(transaction.getSignature(), transaction.getHash().getBytes(), transaction.getKey())) return false;
+        //System.out.println("Signature Verified");
         //if (BigInteger.compare(inputSum, transaction.sum()) != 0) return false;
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
@@ -247,7 +264,7 @@ public class BlockValidation {
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/held_utxos/" + bid.getContractHash() + "/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
-            if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
+            if (!DigestUtils.sha256Hex(bid.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum = inputSum.add(utxo.toFloat());
         }
         //System.out.println("Inputs Verified");
@@ -283,7 +300,7 @@ public class BlockValidation {
         for (TransactionInput input : inputs) {
             UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
             if (utxo == null) return false;
-            if (!DigestUtils.sha256Hex(input.getKey().toByteArray()).equals(utxo.getAddress())) return false;
+            if (!DigestUtils.sha256Hex(bid.getKey().toByteArray()).equals(utxo.getAddress())) return false;
             inputSum = inputSum.add(utxo.toFloat());
         }
         //System.out.println("Inputs Verified");

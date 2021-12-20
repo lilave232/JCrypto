@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +33,11 @@ public class GetFeeAmount   extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         JsonObject json = new JsonObject();
-        json.addProperty("minFee", session.getMinFee());
+        if (session.getMinFee() == null) {
+            json.addProperty("minFee", BigDecimal.ZERO);
+        } else {
+            json.addProperty("minFee", session.getMinFee());
+        }
         response.getWriter().print(json.toString());
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().close();

@@ -56,23 +56,28 @@ public class SendTransactionServlet extends HttpServlet {
             JsonObject jsonObject = new JsonParser().parse(jsonString).getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString());
+            byte[] txnSignature = new byte[65];
+            if (jsonObject.get("signature").getAsJsonObject().get("v") == null) {
+                txnSignature = Cryptography.deriveSignature(jsonObject.get("signature").getAsJsonObject(), jsonObject.get("signature").getAsJsonObject().get("msg").getAsString().getBytes());
+                //System.out.println("Transaction Hash Per Msg: " + jsonObject.get("signature").getAsJsonObject().get("msg").getAsString());
+                if (txnSignature == null) {
+                    System.out.println("ID Not Found");
+                    System.out.println("Transaction Failed");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().close();
+                }
+            } else {
+                txnSignature = Cryptography.generateSignatureRSV(jsonObject.get("signature").getAsJsonObject());
+            }
+            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString(), new BigInteger(jsonObject.get("signature").getAsJsonObject().get("public").getAsString()), txnSignature);
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();
                 Integer index = object.get("outputIndex").getAsInt();
-                JsonObject sigObject = object.get("outputSignature").getAsJsonObject();
-
-                int recId = sigObject.get("v").getAsInt();
-                int headerByte = recId + 27;
-                byte v = (byte) headerByte;
-                byte[] r = Numeric.toBytesPadded(new BigInteger(sigObject.get("r").getAsString()), 32);
-                byte[] s = Numeric.toBytesPadded(new BigInteger(sigObject.get("s").getAsString()), 32);
+                int recId = 0;
                 byte[] signature = new byte[65];
-                System.arraycopy(r, 0, signature, 0, r.length);
-                System.arraycopy(s, 0, signature, r.length, s.length);
-                signature[64] = v;
-                TransactionInput input = new TransactionInput(previousTxn,index,signature,new BigInteger(sigObject.get("public").getAsString()));
+                
+                TransactionInput input = new TransactionInput(previousTxn,index);
                 UTXO utxo = session.getBlockFileHandler().loadUTXO(session.getPath() + "/utxos/" + input.previousTxnHash + "|" + String.valueOf(input.outputIndex));
                 txn.addInput(input);
             }
@@ -85,6 +90,7 @@ public class SendTransactionServlet extends HttpServlet {
                 TransactionOutput output = new TransactionOutput(address,value);
                 txn.addOutput(output);
             }
+            System.out.println("Transaction Hash Per Txn: " + txn.getMsg());
             String object = DatatypeConverter.printBase64Binary(txn.toBytes());
             javax.json.JsonObject data = Json.createObjectBuilder().add("data", object).build();
             session.getPeer().sendMessage(Message.BROADCASTTXN, data);

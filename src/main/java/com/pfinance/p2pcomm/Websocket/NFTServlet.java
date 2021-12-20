@@ -15,6 +15,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import com.pfinance.p2pcomm.Contracts.NFT;
+import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.FileHandler.HashIndex;
 import static com.pfinance.p2pcomm.Main.session;
@@ -180,7 +181,19 @@ public class NFTServlet extends HttpServlet {
             jsonObject = jsonObject.get("mintFee").getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction mintFee = new Transaction(jsonObject.get("timestamp").getAsString());
+            byte[] txnSignature = new byte[65];
+            if (jsonObject.get("signature").getAsJsonObject().get("v") == null) {
+                txnSignature = Cryptography.deriveSignature(jsonObject.get("signature").getAsJsonObject(), jsonObject.get("signature").getAsJsonObject().get("msg").getAsString().getBytes());
+                if (txnSignature == null) {
+                    System.out.println("ID Not Found");
+                    System.out.println("Transaction Failed");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().close();
+                }
+            } else {
+                txnSignature = Cryptography.generateSignatureRSV(jsonObject.get("signature").getAsJsonObject());
+            }
+            Transaction mintFee = new Transaction(jsonObject.get("timestamp").getAsString(), new BigInteger(jsonObject.get("signature").getAsJsonObject().get("public").getAsString()),txnSignature);
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();
@@ -197,7 +210,7 @@ public class NFTServlet extends HttpServlet {
                 System.arraycopy(s, 0, signature, r.length, s.length);
                 signature[64] = v;
 
-                TransactionInput input = new TransactionInput(previousTxn,index,signature,new BigInteger(sigObject.get("public").getAsString()));
+                TransactionInput input = new TransactionInput(previousTxn,index);
 
                 mintFee.addInput(input);
             }

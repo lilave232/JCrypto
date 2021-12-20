@@ -156,7 +156,7 @@ public class Main {
                     System.out.println("Mining");
                     session.setValidation();
                     if (args[6].equals("server")) {
-                        if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) {
+                        if (session.getPeer() != null) {
                             WebServer webserver = new WebServer(session);
                             webserver.start();
                         }

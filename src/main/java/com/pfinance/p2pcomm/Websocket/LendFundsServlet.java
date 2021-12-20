@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.pfinance.p2pcomm.Contracts.LendContract;
+import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Messaging.Message;
 import com.pfinance.p2pcomm.Session;
@@ -59,16 +60,7 @@ public class LendFundsServlet extends HttpServlet {
             String borrowContractHash = jsonObject.get("borrowContractHash").getAsString();
             
             JsonObject contractSigObject = jsonObject.get("signature").getAsJsonObject();
-
-            int recId = contractSigObject.get("v").getAsInt();
-            int headerByte = recId + 27;
-            byte v = (byte) headerByte;
-            byte[] r = Numeric.toBytesPadded(new BigInteger(contractSigObject.get("r").getAsString()), 32);
-            byte[] s = Numeric.toBytesPadded(new BigInteger(contractSigObject.get("s").getAsString()), 32);
-            byte[] contractSignature = new byte[65];
-            System.arraycopy(r, 0, contractSignature, 0, r.length);
-            System.arraycopy(s, 0, contractSignature, r.length, s.length);
-            contractSignature[64] = v;
+            byte[] contractSignature = Cryptography.generateSignatureRSV(contractSigObject);
             
             String timestamp = jsonObject.get("inceptionDate").getAsString();
             
@@ -78,24 +70,21 @@ public class LendFundsServlet extends HttpServlet {
             jsonObject = jsonObject.get("lendTransaction").getAsJsonObject();
             JsonArray inputs = jsonObject.get("inputs").getAsJsonArray();
             JsonArray outputs = jsonObject.get("outputs").getAsJsonArray();
-            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString());
+            
+            
+            byte[] txnSignature = Cryptography.generateSignatureRSV(jsonObject.get("signature").getAsJsonObject());
+            
+            Transaction txn = new Transaction(jsonObject.get("timestamp").getAsString(), new BigInteger(jsonObject.get("signature").getAsJsonObject().get("public").getAsString()),txnSignature);
+            
             for (int i = 0; i < inputs.size(); i++) {
                 JsonObject object = inputs.get(i).getAsJsonObject();
                 String previousTxn = object.get("previousTxnHash").getAsString();
                 Integer index = object.get("outputIndex").getAsInt();
                 JsonObject sigObject = object.get("outputSignature").getAsJsonObject();
 
-                recId = sigObject.get("v").getAsInt();
-                headerByte = recId + 27;
-                v = (byte) headerByte;
-                r = Numeric.toBytesPadded(new BigInteger(sigObject.get("r").getAsString()), 32);
-                s = Numeric.toBytesPadded(new BigInteger(sigObject.get("s").getAsString()), 32);
-                byte[] signature = new byte[65];
-                System.arraycopy(r, 0, signature, 0, r.length);
-                System.arraycopy(s, 0, signature, r.length, s.length);
-                signature[64] = v;
+                byte[] signature = Cryptography.generateSignatureRSV(sigObject);
 
-                TransactionInput input = new TransactionInput(previousTxn,index,signature,new BigInteger(sigObject.get("public").getAsString()));
+                TransactionInput input = new TransactionInput(previousTxn,index);
                 
                 txn.addInput(input);
             }

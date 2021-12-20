@@ -20,10 +20,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import com.google.gson.JsonObject;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.spongycastle.util.encoders.Hex;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Sign;
+import org.web3j.utils.Numeric;
 
 /**
  *
@@ -37,7 +41,7 @@ public class Cryptography {
     };
     
     public static byte[] sign(byte[] msg, ECKeyPair pair) {
-        byte[] msgHash = Hash.sha3(msg);
+        byte[] msgHash = Hash.sha256(msg);
         Sign.SignatureData signed = Sign.signMessage(msgHash, pair, false);
         byte[] signature = new byte[signed.getR().length + signed.getS().length + signed.getV().length];
         System.arraycopy(signed.getR(), 0, signature, 0, signed.getR().length);
@@ -56,7 +60,8 @@ public class Cryptography {
         Sign.SignatureData signed = new Sign.SignatureData(v, r, s);
         BigInteger pubKeyRecovered;
         try {
-            pubKeyRecovered = Sign.signedMessageToKey(msg, signed);
+            byte[] msgHash = Hash.sha256(msg);
+            pubKeyRecovered = Sign.signedMessageHashToKey(msgHash, signed);
             //System.out.println("Recovered: " + Hex.toHexString(pubKeyRecovered.toByteArray()));
             boolean validSig = pubKey.equals(pubKeyRecovered);
             return validSig;
@@ -113,5 +118,42 @@ public class Cryptography {
         if( padCount >= 1 && padCount <= 8 )
             decData = Arrays.copyOfRange( decData , 0, decData.length - padCount);
         return decData;
+    }
+    
+    public static byte[] deriveSignature(JsonObject sigObject, byte[] msg) {
+        int recId = 0;
+        for (int x = 0; x < 4; x++) {
+            int headerByte = x + 27;
+            byte v = (byte) headerByte;
+            byte[] r = Numeric.toBytesPadded(new BigInteger(sigObject.get("r").getAsString()), 32);
+            byte[] s = Numeric.toBytesPadded(new BigInteger(sigObject.get("s").getAsString()), 32);
+            byte[] signature = new byte[65];
+            System.arraycopy(r, 0, signature, 0, r.length);
+            System.arraycopy(s, 0, signature, r.length, s.length);
+            signature[64] = v;
+            if (Cryptography.verify(signature, msg,new BigInteger(sigObject.get("public").getAsString()))) {
+                recId = x;
+                System.out.println("ID Found");
+                return signature;
+            }
+            if (x == 3) {
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    public static byte[] generateSignatureRSV(JsonObject sigObject) {
+        int recId = 0;
+        recId = sigObject.get("v").getAsInt();
+        int headerByte = recId + 27;
+        byte v = (byte) headerByte;
+        byte[] r = Numeric.toBytesPadded(new BigInteger(sigObject.get("r").getAsString()), 32);
+        byte[] s = Numeric.toBytesPadded(new BigInteger(sigObject.get("s").getAsString()), 32);
+        byte[] contractSignature = new byte[65];
+        System.arraycopy(r, 0, contractSignature, 0, r.length);
+        System.arraycopy(s, 0, contractSignature, r.length, s.length);
+        contractSignature[64] = v;
+        return contractSignature;
     }
 }

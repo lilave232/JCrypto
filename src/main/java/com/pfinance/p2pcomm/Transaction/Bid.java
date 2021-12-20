@@ -34,9 +34,6 @@ public class Bid implements Serializable {
         this.contractHash = contractHash;
         this.key = key.getKey().getPublicKey();
         this.transaction = transaction;
-        this.transaction.getInputs().forEach(input -> {
-            input.removeSignature();
-        });
         this.hash = DigestUtils.sha256Hex(this.timestamp+this.contractHash+this.transaction.getHash());
         this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
     }
@@ -46,9 +43,7 @@ public class Bid implements Serializable {
         this.contractHash = contractHash;
         this.key = key;
         this.transaction = transaction;
-        this.transaction.getInputs().forEach(input -> {
-            input.removeSignature();
-        });
+        this.transaction.removeSignature();
         this.hash = DigestUtils.sha256Hex(this.timestamp+this.contractHash+this.transaction.getHash());
         this.signature = signature;
     }

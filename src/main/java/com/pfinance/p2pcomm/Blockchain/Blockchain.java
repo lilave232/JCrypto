@@ -101,9 +101,9 @@ public class Blockchain {
         }
         ArrayList<TransactionOutput> outputs = session.getWallet().getBaseOutputs(time);
         if (this.index.getHashes().isEmpty())
-            block = new Block(DigestUtils.sha256Hex("Genesis Block"),stakeHash,time,key.getAddress(),outputs,key.getKey().getPublicKey());
+            block = new Block(DigestUtils.sha256Hex("Genesis Block"),stakeHash,time,key.getAddress(),outputs,key);
         else
-            block = new Block(this.index.getHashes().get(this.index.getHashes().size()-1).hash,stakeHash,time,key.getAddress(),outputs, key.getKey().getPublicKey());
+            block = new Block(this.index.getHashes().get(this.index.getHashes().size()-1).hash,stakeHash,time,key.getAddress(),outputs, key);
         
         session.getBlockFileHandler().loadPendingObjects();
         if (session.getPeer() != null && session.getValidation()) {
@@ -158,6 +158,7 @@ public class Blockchain {
     public boolean verifyTransaction(Object object) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
         if (object instanceof Transaction) {
             if (!checkFee(object,((Transaction) object).toBytes().length))return false;
+            System.out.println("Fee Okay!");
             if (this.blockValidator.verifyTransaction((Transaction) object)) {block.addData(object, getFee((Transaction) object)); return true;}
         } else if (object instanceof BorrowContract) {
             if (!checkFee(object,((BorrowContract) object).toBytes().length))return false;
@@ -301,14 +302,14 @@ public class Blockchain {
         }
     }
     
-    public Penalty generatePenalty(StakeContract contract, String timestamp) {
-        Transaction transaction = new Transaction(timestamp);
-        TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Penalty"),0,DigestUtils.sha256("Penalty"),null);
+    public Penalty generatePenalty(StakeContract contract, Key key, String timestamp) {
+        Transaction transaction = new Transaction(timestamp, key);
+        TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Penalty"),0);
         ArrayList<TransactionOutput> outputs = generatePenaltyOutputs(contract,timestamp);
         for (TransactionOutput output : outputs) {
-            transaction.addOutput(output);
+            transaction.addOutput(output,key);
         }
-        transaction.addInput(baseInput);
+        transaction.addInput(baseInput,key);
         Penalty penalty = new Penalty(contract.getHash(),timestamp,transaction);
         return penalty;
     }

@@ -44,8 +44,7 @@ public class UTXO implements Serializable {
     
     public TransactionInput getInput(Key key) {
         try {
-            byte[] signature = Cryptography.sign(DigestUtils.sha256Hex(this.hash + this.index.toString()).getBytes(),key.getKey());
-            TransactionInput input = new TransactionInput(this.hash,this.index,signature,key.getKey().getPublicKey());
+            TransactionInput input = new TransactionInput(this.hash,this.index);
             return input;
         } catch (Exception e) {
             return null;

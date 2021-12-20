@@ -15,6 +15,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import com.pfinance.p2pcomm.Transaction.*;
 import com.pfinance.p2pcomm.Contracts.*;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
+import com.pfinance.p2pcomm.Wallet.Key;
 import java.math.BigDecimal;
 
 /**
@@ -31,19 +32,19 @@ public class Block implements Serializable {
     private BigInteger key = null;
     ArrayList<Object> data = new ArrayList<>();
     
-    public Block(String previousBlockHash, String stakeContractHash, String timestamp, String address, ArrayList<TransactionOutput> baseOutput, BigInteger pub) {
+    public Block(String previousBlockHash, String stakeContractHash, String timestamp, String address, ArrayList<TransactionOutput> baseOutput, Key key) {
         this.previousBlockHash = previousBlockHash;
         this.stakeContractHash = stakeContractHash;
         this.timestamp = timestamp;
-        this.key = pub;
+        this.key = key.getKey().getPublicKey();
         this.hash = hashBlock();
         //Add Base Transaction
-        Transaction baseTransaction = new Transaction();
-        TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Base"),0,DigestUtils.sha256("Base"),null);
+        Transaction baseTransaction = new Transaction(key);
+        TransactionInput baseInput = new TransactionInput(DigestUtils.sha256Hex("Base"),0);
         BigDecimal reward = new BigDecimal((int) (20 * (1/Math.max(2*((int)(((Long.valueOf(this.timestamp)/1000) - 1577836800)/315360000)),1))));
         if (baseOutput.isEmpty()) {baseOutput.add(new TransactionOutput(address,(BigDecimal)reward));}
-        for (TransactionOutput output : baseOutput) {baseTransaction.addOutput(output);}
-        baseTransaction.addInput(baseInput);
+        for (TransactionOutput output : baseOutput) {baseTransaction.addOutput(output,key);}
+        baseTransaction.addInput(baseInput,key);
         addData(baseTransaction,BigDecimal.ZERO);
     }
     

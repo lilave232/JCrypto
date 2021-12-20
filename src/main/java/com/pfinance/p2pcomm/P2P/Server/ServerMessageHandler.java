@@ -145,7 +145,7 @@ public class ServerMessageHandler {
                             }
                             if (checkVote == VoteResult.NO) {
                                 System.out.println("Assessing Penalty");
-                                Penalty penalty = session.getBlockchain().generatePenalty(contract, String.valueOf(System.currentTimeMillis()));
+                                Penalty penalty = session.getBlockchain().generatePenalty(contract,session.getWallet().getKey(),String.valueOf(System.currentTimeMillis()));
                                 session.getBlockchain().addPendingTxn(penalty);
                                 session.getBlockchain().addData(penalty);
                             }

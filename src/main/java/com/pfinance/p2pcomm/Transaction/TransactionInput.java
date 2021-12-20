@@ -20,29 +20,18 @@ public class TransactionInput implements Serializable {
     private static final long serialVersionUID = -1087045000118285808L;
     public String previousTxnHash = null;
     public Integer outputIndex = null;
-    public byte[] outputSignature = null;
-    private BigInteger key = null;
     private String hash = null;
     
-    public TransactionInput(String previousTxn, Integer index, byte[] signature, BigInteger key) {
+    public TransactionInput(String previousTxn, Integer index) {
         this.previousTxnHash = previousTxn;
         this.outputIndex = index;
-        this.outputSignature = signature;
-        this.key = key;
         this.hash = DigestUtils.sha256Hex(previousTxn + index);
     }
-    
-    public void removeSignature() {
-        outputSignature = null;
-    }
-    
-    public BigInteger getKey() {return this.key;}
     
     public String toString() {
         StringBuffer returnString = new StringBuffer();
         returnString.append(String.format("|%-32s|", this.previousTxnHash.substring(0, 32)));
         returnString.append(String.format("%-32s|", this.outputIndex));
-        returnString.append(String.format("%-32s|", this.outputSignature));
         returnString.append(String.format("%-32s|", ""));
         return returnString.toString();
     }

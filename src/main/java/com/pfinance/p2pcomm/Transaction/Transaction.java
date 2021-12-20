@@ -5,11 +5,14 @@
  */
 package com.pfinance.p2pcomm.Transaction;
 
+import com.pfinance.p2pcomm.Cryptography.Cryptography;
+import com.pfinance.p2pcomm.Wallet.Key;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -25,16 +28,28 @@ public class Transaction implements Serializable {
     private String hash = null;
     public String input_hashes = "";
     public String output_hashes = "";
+    private byte[] signature = null;
+    private BigInteger publicKey = null;
     
-    public Transaction() {
+    public Transaction(Key key) {
         String time = Long.toString(System.currentTimeMillis());
         this.timestamp = time;
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+        this.publicKey = key.getKey().getPublicKey();
+        this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
     }
     
-    public Transaction(String time) {
+    public Transaction(String time, Key key) {
         this.timestamp = time;
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+        this.signature = signature;
+    }
+    
+    public Transaction(String time, BigInteger key, byte[] signature) {
+        this.timestamp = time;
+        this.publicKey = key;
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+        this.signature = signature;
     }
     
     public void addInput(TransactionInput input) {
@@ -42,10 +57,25 @@ public class Transaction implements Serializable {
         input_hashes += input.getHash();
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
     }
+    
+    public void addInput(TransactionInput input,Key key) {
+        inputs.add(input);
+        input_hashes += input.getHash();
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+        this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
+    }
+    
     public void addOutput(TransactionOutput output) {
         outputs.add(output);
         output_hashes += output.getHash();
         this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+    }
+    
+    public void addOutput(TransactionOutput output,Key key) {
+        outputs.add(output);
+        output_hashes += output.getHash();
+        this.hash = DigestUtils.sha256Hex(input_hashes+output_hashes+this.timestamp);
+        this.signature = Cryptography.sign(this.hash.getBytes(), key.getKey());
     }
     
     public BigDecimal sum() {
@@ -55,8 +85,14 @@ public class Transaction implements Serializable {
         }
         return sumValue;
     }
-
     
+    public void removeSignature() {
+        this.signature = null;
+    }
+
+    public String getMsg() {return this.input_hashes + this.output_hashes + this.timestamp;}
+    public BigInteger getKey() {return this.publicKey;}
+    public byte[] getSignature() {return this.signature;}
     public String getHash() {return this.hash;}
     public ArrayList<TransactionInput> getInputs() {return this.inputs;}
     public ArrayList<TransactionOutput> getOutputs() {return this.outputs;}

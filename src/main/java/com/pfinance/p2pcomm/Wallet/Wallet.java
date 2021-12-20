@@ -413,12 +413,16 @@ public class Wallet {
     //TRANSACTIONS, CONTRACTS
     
     public Transaction createTransaction(ArrayList<TransactionOutput> outputs, BigDecimal fee) throws IOException, FileNotFoundException, ClassNotFoundException, Exception {
-        Transaction txn = new Transaction();
+        Transaction txn = new Transaction(this.getKey());
         BigDecimal outputValue = BigDecimal.ZERO;
         BigDecimal inputValue = BigDecimal.ZERO;
         BigDecimal startingFee = fee;
         outputValue = outputs.stream().map(output -> {
-            txn.addOutput(output);
+            try {
+                txn.addOutput(output,this.getKey());
+            } catch (Exception ex) {
+                Logger.getLogger(Wallet.class.getName()).log(Level.SEVERE, null, ex);
+            }
             return output;
         }).map(output -> output.value).reduce(outputValue, (accumulator, _item) -> accumulator.add(_item));
         
@@ -431,12 +435,12 @@ public class Wallet {
         ArrayList<UTXO> utxos = getUTXOInputs(outputValue.add(fee),session.getMinFee());
         
         for (UTXO utxo : utxos) {
-            txn.addInput(utxo.getInput(this.getKey()));
+            txn.addInput(utxo.getInput(this.getKey()),this.getKey());
             inputValue = inputValue.add(utxo.toFloat());
         }   
         fee = startingFee.add(session.getMinFee().multiply(new BigDecimal(txn.toBytes().length + new TransactionOutput(this.address,(outputValue.add(fee))).toBytes().length)));
         if (inputValue.compareTo((outputValue.add(fee))) > 0) {
-            txn.addOutput(new TransactionOutput(this.address,inputValue.subtract((outputValue.add(fee)))));
+            txn.addOutput(new TransactionOutput(this.address,inputValue.subtract((outputValue.add(fee)))),this.getKey());
         } else if (inputValue.compareTo((outputValue.add(fee))) < 0) {
             throw new Exception("Insufficient Funds");
         }
@@ -446,39 +450,41 @@ public class Wallet {
     
     public BorrowContract createBorrowContract() throws Exception {
         if (this.borrowContract != null) return null;
-        BigDecimal startFee = new BigDecimal(new BorrowContract(this.address, new Transaction(), this.getKey().getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal fee = session.getMinFee();
+        if (session.getMinFee() != null) fee = BigDecimal.ZERO;
+        BigDecimal startFee = new BigDecimal(new BorrowContract(this.address, new Transaction(this.getKey()), this.getKey().getKey()).toBytes().length).multiply(fee);
         BorrowContract contract = new BorrowContract(this.address, createTransaction(new ArrayList<TransactionOutput>(),startFee),this.getKey().getKey());
         return contract;
     }
     
     public LendContract createLendContract(BorrowContract contract, BigDecimal amount) throws Exception {
-        BigDecimal startFee = new BigDecimal(new LendContract(this.address,contract.getHash(),new Transaction(),this.getKey().getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new LendContract(this.address,contract.getHash(),new Transaction(this.getKey()),this.getKey().getKey()).toBytes().length).multiply(session.getMinFee());
         LendContract lcontract = new LendContract(this.address,contract.getHash(),createTransaction(new TransactionOutput(contract.getBorrowerAddress(),amount).toList(),startFee),this.getKey().getKey());
         return lcontract;
     }
     
     public EndLendContract endLendContract(LendContract contract) throws Exception {
-        BigDecimal startFee = new BigDecimal(new EndLendContract(contract.getHash(),contract.getBorrowContractHash(),new Transaction(), this.getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new EndLendContract(contract.getHash(),contract.getBorrowContractHash(),new Transaction(this.getKey()), this.getKey()).toBytes().length).multiply(session.getMinFee());
         EndLendContract elcontract = new EndLendContract(contract.getHash(),contract.getBorrowContractHash(),createTransaction(new ArrayList<TransactionOutput>(),startFee), this.getKey());
         return elcontract;
     }
     
     public StakeContract createStakeContract() throws Exception {
         if (this.borrowContract == null) return null;
-        BigDecimal startFee = new BigDecimal(new StakeContract(this.borrowContract.getHash(),new Transaction(),getKey().getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new StakeContract(this.borrowContract.getHash(),new Transaction(this.getKey()),getKey().getKey()).toBytes().length).multiply(session.getMinFee());
         StakeContract contract = new StakeContract(this.borrowContract.getHash(),createTransaction(new ArrayList<TransactionOutput>(),startFee),getKey().getKey());
         return contract;
     }
     
     
     public NFT createNFT(String type, String title, String description, byte[] data) throws Exception {
-        BigDecimal startFee = new BigDecimal(new NFT(this.address,new Transaction(),type,getKey().getKey(), title, description, data).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new NFT(this.address,new Transaction(this.getKey()),type,getKey().getKey(), title, description, data).toBytes().length).multiply(session.getMinFee());
         NFT nft = new NFT(this.address,createTransaction(new ArrayList<TransactionOutput>(),startFee),type,getKey().getKey(), title, description, data);
         return nft;
     }
     
     public ListNFT listNFT(NFT nft) throws Exception {
-        BigDecimal startFee = new BigDecimal(new ListNFT(nft.getHash(),new Transaction(),getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new ListNFT(nft.getHash(),new Transaction(this.getKey()),getKey()).toBytes().length).multiply(session.getMinFee());
         ListNFT list = new ListNFT(nft.getHash(),createTransaction(new ArrayList<TransactionOutput>(),startFee),getKey());
         return list;
     }
@@ -528,7 +534,7 @@ public class Wallet {
     
     public Bid createBid(NFT nft, BigDecimal amount) throws Exception {
         String address = session.getBlockFileHandler().getNFTOwner(nft.getHash());
-        BigDecimal startFee = new BigDecimal(new Bid(nft.getHash(),new Transaction(),this.getKey()).toBytes().length).multiply(session.getMinFee());
+        BigDecimal startFee = new BigDecimal(new Bid(nft.getHash(),new Transaction(this.getKey()),this.getKey()).toBytes().length).multiply(session.getMinFee());
         Transaction txn = createTransaction(new TransactionOutput(address,amount).toList(),startFee);
         Bid bid = new Bid(nft.getHash(),txn,this.getKey());
         return bid;
