@@ -16,6 +16,7 @@ import com.pfinance.p2pcomm.Contracts.ListNFT;
 import com.pfinance.p2pcomm.Contracts.NFT;
 import com.pfinance.p2pcomm.Contracts.NFTTransfer;
 import com.pfinance.p2pcomm.Contracts.StakeContract;
+import com.pfinance.p2pcomm.FileHandler.FileHandler;
 import com.pfinance.p2pcomm.FileHandler.Validator;
 import com.pfinance.p2pcomm.Messaging.Message;
 import com.pfinance.p2pcomm.Miner.Miner;
@@ -301,6 +302,7 @@ public class Main {
         if (session.getPeer() != null && !session.getValidation() && session.getValidationAvailable()) System.out.println("[14]Start Validation");
         else if (session.getPeer() != null && session.getValidation() && session.getValidationAvailable()) System.out.println("[14]Stop Validation");
 //        if (session.getPeer() != null) System.out.println("[15]End Lend Contract");
+        if (session.getPeer() != null) System.out.println("[15]Mint NFT");
         if (session.getPeer() != null) System.out.println("[16]List NFT");
         if (session.getPeer() != null) System.out.println("[17]Bid on NFT");
         if (session.getPeer() != null) System.out.println("[18]Show Bids");
@@ -410,24 +412,35 @@ public class Main {
             
         }
         else if (response.equals("14") && session.getPeer() != null) {session.setValidation();}
-//        else if (response.equals("15") && session.getPeer() != null) {
-//            ArrayList<LendContract> contracts = activeWallet.getLendContracts();
-//            for (int i = 0; i < contracts.size(); i++) {
-//                BigDecimal value = 0;
-//                LendContract contract = contracts.get(i);
-//                if (contract.getLendTransaction().getOutputs().size() > 0) value = contract.getLendTransaction().getOutputs().get(0).value;
-//                System.out.println("[" + i + "]" + contract.getHash() + " " + value);
-//            }
-//            System.out.println("Selection?");
-//            Integer selection = Integer.valueOf(bufferedReader.readLine());
-//            LendContract contract = contracts.get(selection);
-//            System.out.println("Fee Amount?");
-//            BigDecimal fee = BigDecimal.valueOf(bufferedReader.readLine());
-//            EndLendContract endcontract = activeWallet.endLendContract(contract,fee);
-//            String object = DatatypeConverter.printBase64Binary(endcontract.toBytes());
-//            JsonObject data = Json.createObjectBuilder().add("data", object).build();
-//            session.getPeer().sendMessage(Message.BROADCASTTXN, data);
-//        }
+        else if (response.equals("15") && session.getPeer() != null) {
+            System.out.println("Title?");
+            String title = bufferedReader.readLine();
+            System.out.println("Description?");
+            String description = bufferedReader.readLine();
+            System.out.println("Type (MIME or Custom FileType)?");
+            String type = bufferedReader.readLine();
+            System.out.println("File?");
+            String file = bufferedReader.readLine();
+            byte[] fileData = new FileHandler().readBytes(file);
+            if (fileData == null) {
+                System.out.println("File Does not Exist!");
+                return;
+            }
+            activeWallet.getQuote();
+            NFT nft = activeWallet.createNFT(type, title, description, fileData);
+            System.out.println("Mint NFT (N/y)?");
+            String confirmation = String.valueOf(bufferedReader.readLine());
+            if (confirmation.toUpperCase().equals("Y")) {
+                String object = DatatypeConverter.printBase64Binary(nft.toBytes());
+                JsonObject data = Json.createObjectBuilder().add("data", object).build();
+                session.getPeer().sendMessage(Message.BROADCASTTXN, data);
+                if (session.getValidators().getValidators(session.getBlockValidator().getStakeRequirement()).size() == 1 && session.getValidation()) {
+                    boolean result = session.getBlockchain().addData(nft);
+                    if (result) {session.getBlockchain().addPendingTxn(nft);System.out.println("Transaction Accepted");} 
+                    else {System.out.println("Transaction Failed");} 
+                }
+            }
+        }
         else if (response.equals("16") && session.getPeer() != null) {
             ArrayList<NFT> nfts = activeWallet.getNFTs();
             for (int i = 0; i < nfts.size(); i++) {
