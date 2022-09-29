@@ -19,7 +19,7 @@ function showError(element,msg) {
 }
 
 function requestTokens(event) {
-    $.post('http:/jcrypto.ddns.net:55555/airDrop', {address: document.getElementById('address').value},"json").done(( data ) => {
+    $.post('http:/jcryptotestnet.ddns.net:55555/airDrop', {address: document.getElementById('address').value},"json").done(( data ) => {
         showSuccess($('body'),"Transaction Sent!");
         //resolve(Number(data.Usable_Balance).toFixed(2));    
     },"json").fail(function(xhr, status, error) {
