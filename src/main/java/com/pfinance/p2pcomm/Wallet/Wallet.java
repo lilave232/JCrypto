@@ -348,7 +348,10 @@ public class Wallet {
         } catch (IOException e) {
             e.printStackTrace();
             return outputs;
-        } 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return outputs;
+        }
     }
     
     public BigDecimal getLentBalance() {
