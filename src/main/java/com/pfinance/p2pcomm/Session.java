@@ -208,7 +208,7 @@ public class Session {
         }
     }
     
-    public BigDecimal getMinFee() {return this.minFee;}
+    public BigDecimal getMinFee() { if(this.minFee == null) {return new BigDecimal(0);} else {return this.minFee;}}
     
     public Scheduler getScheduler() {return this.scheduler;}
     public Miner getMiner() {return this.miner;}
