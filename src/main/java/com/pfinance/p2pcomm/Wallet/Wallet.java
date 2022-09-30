@@ -25,6 +25,8 @@ import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -337,7 +339,7 @@ public class Wallet {
                 outputValues.put(output.address, outputValues.getOrDefault(output.address, BigDecimal.ZERO).add(output.value));
             });
             outputValues.forEach((k,v)-> {
-                TransactionOutput output = new TransactionOutput(k,(v.divide(user.getBalance())).multiply(session.getBlockValidator().getReward(timestamp)));
+                TransactionOutput output = new TransactionOutput(k,(v.divide(user.getBalance(),MathContext.DECIMAL32)).multiply(session.getBlockValidator().getReward(timestamp)));
                 System.out.println(output.toString());
                 outputs.add(output);
             });
