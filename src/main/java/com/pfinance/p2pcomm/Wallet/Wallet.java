@@ -337,10 +337,11 @@ public class Wallet {
             });
             outputValues.forEach((k,v)-> {
                 TransactionOutput output = new TransactionOutput(k,(v.divide(user.getBalance())).multiply(session.getBlockValidator().getReward(timestamp)));
-                System.out.println(output);
+                System.out.println(output.toString());
                 outputs.add(output);
             });
             FileHandler handler = new FileHandler();
+            System.out.println("Saving Base Outputs");
             handler.writeObject(session.getPath() + "/wallets/" + session.getWallet().name + "/baseOutputs", outputs);
             return outputs;
         } catch (IOException e) {
