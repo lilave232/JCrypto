@@ -17,6 +17,7 @@ import com.pfinance.p2pcomm.Contracts.*;
 import com.pfinance.p2pcomm.Cryptography.Cryptography;
 import com.pfinance.p2pcomm.Wallet.Key;
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 /**
  *
@@ -58,7 +59,7 @@ public class Block implements Serializable {
         Transaction original = (Transaction) this.data.get(0);
         BigDecimal value = original.sum();
         for (TransactionOutput output : original.getOutputs()) {
-            output.value = output.value.add(fee.multiply((output.value.divide(value))));
+            output.value = output.value.add(fee.multiply((output.value.divide(value,MathContext.DECIMAL32))));
         }
     }
     

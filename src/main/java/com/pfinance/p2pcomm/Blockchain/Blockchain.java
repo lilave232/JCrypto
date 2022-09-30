@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -332,7 +333,7 @@ public class Blockchain {
                         if (contract.getLendTransaction().getOutputs().size() > 0) {
                             Validator user = session.getValidators().getValidator(stakeContract.getHash());
                             TransactionOutput loutput = contract.getLendTransaction().getOutputs().get(0);
-                            TransactionOutput baseOutput = new TransactionOutput(contract.getLenderAddress(),(loutput.value.divide(user.getBalance())).multiply(session.getBlockValidator().getReward(timestamp)).negate());
+                            TransactionOutput baseOutput = new TransactionOutput(contract.getLenderAddress(),(loutput.value.divide(user.getBalance(),MathContext.DECIMAL32)).multiply(session.getBlockValidator().getReward(timestamp)).negate());
                             outputValues.put(baseOutput.address, outputValues.getOrDefault(baseOutput.address, BigDecimal.ZERO).add(baseOutput.value));
                         }
                     }
