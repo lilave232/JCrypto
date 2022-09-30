@@ -339,7 +339,6 @@ public class Wallet {
             });
             outputValues.forEach((k,v)-> {
                 TransactionOutput output = new TransactionOutput(k,(v.divide(user.getBalance(),MathContext.DECIMAL32)).multiply(session.getBlockValidator().getReward(timestamp)));
-                System.out.println(output.toString());
                 outputs.add(output);
             });
             FileHandler handler = new FileHandler();
