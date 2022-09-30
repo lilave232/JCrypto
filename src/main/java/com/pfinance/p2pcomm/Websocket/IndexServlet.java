@@ -54,8 +54,8 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        //response.setContentType("text/html");
+        //response.setCharacterEncoding("UTF-8");
         //response.getWriter().print("{\"wallets\":[");
         //if (session.getWallets().isEmpty()) {
         //} else {
@@ -79,10 +79,12 @@ public class IndexServlet extends HttpServlet {
             content = ("Balance: " + String.valueOf(this.session.getWallet().getUsableBalance()));
         }
         request.setAttribute("walletName",content);
-        try {
-            request.getRequestDispatcher("/html/index.jsp").forward(request,response);
-        } catch (IllegalStateException ex) {}
         */
+        try {
+            request.getRequestDispatcher("/html/index1.jsp").forward(request,response);
+        } catch (IllegalStateException ex) {
+            System.out.println("ERROR");
+        }
     }
     
     public AbstractMap.SimpleEntry<ArrayList<UTXO>,BigDecimal> getUsableBalance(String address) {

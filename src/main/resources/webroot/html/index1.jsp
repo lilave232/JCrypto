@@ -1,0 +1,309 @@
+<html>
+    <head>
+        <title>JCrypto</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+        <link rel="stylesheet" href="static/css/background.css">
+        <link rel="stylesheet" href="static/css/main.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    </head>
+    <body class="m-0">
+        <canvas id="gradient-canvas" data-js-darken-top data-transition-in></canvas>
+        <div class="pt-5 pb-5 container-fluid h-100 w-100 overflow-scroll">
+            <div class="p-3 container bg-white text-start text-secondary">
+                <h1>JCrypto</h1>
+                <h5>A Staking Decentralized Crypto Currency Network Programmed With Java</h5>
+                <hr>
+                <h3>Introduction</h3>
+                <hr>
+                <p>
+                    JCrypto is a crypto currency that uses crypto staking nodes to validate and add records on to the blockchain. 
+                    <br>
+                    <br>
+                    Users that stake 0.1% of all currency in circulation have the ability to validate the blocks and add them to the chain. 
+                    <br>
+                    <br>
+                    Additionally through the use of smart contracts, the blockchain allows open staking pools, once a user sets up a staking pool any individual can contribute and receive rewards.
+                    <br>
+                    <br>
+                    Through the use of smart contracts users can also mint and transfer unique records on the chain. As seen below.
+                </p>
+                <hr>
+                <h3>Repository</h3>
+                <hr>
+                <p>
+                    <a href="https://github.com/lilave232/JCrypto">Link to the Github Repository</a>
+                </p>
+                <hr>
+                <h3>Getting Started</h3>
+                <h4>Downloading the Wallet Extension</h4>
+                <hr>
+                <p>
+                    To download and install the wallet extension
+                    <ul>
+                        <li>Download the repository at the link git: <a href="https://github.com/lilave232/JCrypto-Wallet.git">Click here for git</a> | <a href="https://github.com/lilave232/JCrypto-Wallet/archive/refs/heads/main.zip">Click here for zip</a></li>
+                        <li>To install follow the instructions at <a href="https://developer.chrome.com/docs/extensions/mv2/getstarted/">Chrome Extension Installation</a>, using the "Extension" directory as the source.</li>
+                    </ul>
+                </p>
+                <h4>Running a Full Node</h4>
+                <hr>
+                <p>
+                    Installing and Running a Node
+                    <ul>
+                        <li>Download the repository at the link git: <a href="https://github.com/lilave232/JCrypto.git">Click here for git</a> | <a href="https://github.com/lilave232/JCrypto/archive/refs/heads/main.zip">Click here for zip</a></li>
+                        <li>Ensure you have java 17 installed if not navigate to this <a href="https://www.oracle.com/java/technologies/downloads/#jdk17">link</a></li>
+                        <li>Open your preferred terminal application</li>
+                        <li>Navigate to the directory where you downloaded the respository</li>
+                        <li>Run the command: java -jar target/P2PComm-1.0-SNAPSHOT-jar-with-dependencies.jar</li>
+                        <li>At the terminal window type 0</li>
+                        <li>Enter the name of the folder to store your chain</li>
+                        <li>Enter 0 for create wallet</li>
+                        <li>Enter a wallet name and a password</li>
+                        <li>Store the mnemonic given offline as this is not accessible again after this point</li>
+                    </ul>
+                    Connecting to Existing Chain
+                    <ul>
+                        <li>If you with to run a peer enter 2 to start peer and enter the port number to run your server</li>
+                        <li>Enter 3 to connect to peer and enter the peer address:port</li>
+                    </ul>
+                    Starting New Chain
+                    <ul>
+                        <li>If insted you would like to create your own new blockchain type 5</li>
+                        <li>Type the password to your wallet and the chain will establish itself</li>
+                        <li>You will automatically be setup as the only validator for the chain</li>
+                        <li>Press 7 to see the balance in the wallet and it should be 50 usable balance, 10 borrowed and 10 lent</li>
+                        <li>To validate the chain and create new blocks enter 2 and type in any port number (i.e. 4444, 5555)</li>
+                        <li>More options will be become available enter 14 to start validating</li>
+                        <li>If it states a schedule time and time to reset you have started validating the chain</li>
+                    </ul>
+                    
+                </p>
+                <hr>
+                <h3>Airdrop</h3>
+                <hr>
+                    <h5>Enter your JCrypto testnet address to receive tokens and test the network.</h5>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address:</label>
+                        <input type="text" class="form-control w-50" name="address" id="address" placeholder="">
+                    </div>
+                    <div class="mb-3">
+                        <button id="requestTokens" type="submit" class="btn btn-primary" onclick="requestTokens()">Drop!</button>
+                    </div>
+                <hr>
+                <h3>How it Works</h3>
+                <hr>
+                <h4>P2P Network</h4>
+                <hr>
+                <p>
+                    JCrypto works by establishing a peer 2 peer network connecting all nodes as seen below.
+                    <br>
+                    <br>
+                    <img src="static/images/P2P-network.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    Once one node connects to another it requests the information about how to connect to other nodes (i.e. address:port)
+                    <br>
+                    <br>
+                    <img src="static/images/Connection-Diagram.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    Once connected these nodes then request the data related to the blockchain so that they can store it locally which facilitates the decentralization.
+                    <br>
+                    <br>
+                    <img src="static/images/Send-Files.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    Each node has the entire chain stored locally and can share the chain with other nodes once connected so if one node loses the chain it can be restored by communicating with other nodes.
+                    <br>
+                    <br>
+                    The strength of the network relies on the number of active full nodes and the integrity of the validators.
+                </p>
+                <hr>
+                <h4>Blockchain Structure</h4>
+                <hr>
+                <p>
+                    The JCrypto blockchain is built by creating individual records known as blocks which store records of different types currently supported types are Transactions, Borrow Contracts, Lend Contracts, Stake Contracts, NFTs, and NFT Transfers.
+                    <br>
+                    <br>
+                    These blocks are built on top of each other end to end with the each block containing the <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">hash</a> of the previous block. This is why it is called a chain because the blocks are chained together by the previous blocks hash.
+                    <br>
+                    <br>
+                    <img src="static/images/Block-Chain.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    This is what provides integrity to the chain, the block hash is unique to the exact contents of the block, if a block was tampered with the hash would be unequal to the hash identified in the next block and the node's blockchain would be invalid.
+                    <br>
+                    <br>
+                    Additionally the blocks order is always known all you need is the first hash and you can follow through the entire chain by hashing each block and looking for the block with an equal previous hash.
+                </p>
+                <hr>
+                <h4>Block Structure</h4>
+                <hr>
+                <p>
+                    The Blocks are structured as follows:
+                    <br>
+                    <br>
+                    <img src="static/images/Block-Detail.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    <h5>The Block Header Contains</h5>
+                    <ul>
+                        <li>Previous Block Hash: The hash of the previous block contents</li>
+                        <li>Stake Contract Hash: The hash of the stake contract belonging to the block validator</li>
+                        <li>Timestamp: The time that the block was sent to the other nodes for validation</li>
+                    </ul>
+                    <h5>The Transaction Section Contains</h5>
+                    <ul>
+                        <li>Coinbase Transactions: Always the first transaction this is the reward issued to the validator for confirming the block.</li>
+                        <li>Transactions: All of the additional transactions and contracts.</li>
+                    </ul>
+                </p>
+                <hr>
+                <h4>Transactions</h4>
+                <hr>
+                <p>
+                    A transaction is formatted as follows:
+                    <br>
+                    <br>
+                    <img src="static/images/Txn-Detail.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    Each transaction contains inputs and outputs.
+                    <br>
+                    <br>
+                    The input is derived from a previous output and ownership of that output is confirmed by confirming the user owns the address.
+                    <br>
+                    <br>
+                    The output is determined by the sender saying how much he would like to send each address and ensuring that he has enouch currency in the inputs section to send that amount.
+                    <br>
+                    <br>
+                    This works similar to the blockchain structure. Each transaction can be identified by a hash. Each output is identified by its location in the transaction outputs.
+                    <br>
+                    <br>
+                    For example if my friend sent me 10 coins in transaction hash 12345 and I wanted to send 10 coins the transaction would look like the following.
+                    <br>
+                    <br>
+                    <img src="static/images/Sent-Detail.svg" class="w-50"></img>
+                    <br>
+                    <br>
+                    This transaction would be signed with my private key confirming I agree to the transaction. This key is a ECDSA private key, a public key is derived from it and the public key is then hashed to arrive at the address. This allows anyone to confirm the address by hashing my public key but the private key cannot be reversed from the address.
+                    <br>
+                    <br>
+                    Ownership of the inputs can be confirmed by using the public key to verify the inputs were properly signed and by obtaining the output corresponding to that input and confirming the hashed public key matches the output address.
+                    <br>
+                    <br>
+                    This process allows confirmation of ownership since the signature is derived from the private key. The public key validates the signature confirming the user has the mathcing private key, the public key hash matches the address that the previous funds were sent to. Confirming the user has the private key matching the address with unused outputs.
+                    <h5>Coinbase Transation</h5>
+                    The coinbase transaction is the first transaction in each block. It distributes the reward to the validator and any who staked currency on that contract.
+                    <br>
+                    The coinbase output is the addresses of all lenders on the stake contract, the amount is the reward (decreasing overtime using a mathematical calculation) plus any fees divided amongst the stakers by percentage of staked funds.
+                </p>
+                <hr>
+                <h4>Contracts</h4>
+                <hr>
+                <p>
+                    <h5>Borrow Contract</h5>
+                    The first contract is a borrow contract this contract is used to let other's know you are looking to borrow funds.
+                    <h5>Lend Contract</h5>
+                    This contract is used to lend funds to borrowers. The lender prepares a transaction for the amount they wish to lend with the output address equal to borrower's address. This transaction is added to the lend contract and submit to the validators for confirmation.
+                    <h5>Stake Contract</h5>
+                    This contract is used to track staked funds. This contract is linked to a borrow contract, once this contract is added to the chain all funds borrowed under the linked borrow contract are staked, once the user reaches the required amount of staked funds they become a validator.
+                </p>
+                <hr>
+                <h4>NFTs</h4>
+                <hr>
+                <p>
+                    NFTs are used to store data on the chain. This data is then given a unique hash that can be used to confirm ownership. Since the record is published when the contract is minted anyone can match the private key to the signature of the minted NFT confirming ownership.
+                </p>
+                <hr>
+                <h4>NFT Transfers</h4>
+                <hr>
+                <p>
+                    NFT transfers are zero value transfers from one address to another. The owner of the NFT enters the address to transfer to and signs the record. The owner is confirmed using their public key to validate the signature and the transfer record is added.
+                    <br>
+                    As a result of the chain being publicly available but anonymous, any transfer of an NFT can be followed from mint to transfer confirming the ownership record and the address of the current owner.
+                </p>
+                <hr>
+                <h4>Sending Transactions</h4>
+                <hr>
+                <p>
+                    To send transactions the sender connects their node to the chain. The user determines the amount and address of sending.
+                    The wallet builds the transaction by adding the required unused outputs as inputs to the transaction until the value is greater than or equal to the output value.
+                    If the value is greater than the output value a final output is added to return the excess amount back to the sender.
+                    Once the transaction is built it is signed by the sender using their private key and then sent to the other nodes.
+                    The validators will verify the transaction is okay and send a response confirming acceptance of the transaction.
+                </p>
+                <hr>
+                <h4>Block Confirmation Process</h4>
+                <hr>
+                <p>
+                    <h5>Block Proposal</h5>
+                    Blocks are confirmed via a proposal and voting system where one node proposes a block and the other nodes validate it's accuracy and vote on whether it should be added.
+                    <br>
+                    <br>
+                    This process is started by each validator preparing a list to determine which stake contracts have the required amount of currency by looking for lent funds attached to the stake contract.
+                    <br>
+                    <br>
+                    From this list a schedule is prepared allowing the nodes to take turns validating the blocks.
+                    <br>
+                    <br>
+                    The schedule is prepared by ordering the list of validators by total amount staked.
+                    <br>
+                    <br>
+                    Once the list is ordered the total number of blocks is obtained. Total Blocks mod Total Validators is used to determine who will propose a block first (i.e. Total Blocks = 7, Total Validators = 3, 7 mod 3 = 1, the validator with the second highest stake total goes first).
+                    <br>
+                    <br>
+                    The chain intends on blocks being added every 3 minutes. The schedule of propositions will start 3 minutes after the previous blocks timestamp. Then each node has 3 minutes to propose a block.
+                    <br>
+                    <br>
+                    Continuing the example above if the previous block was added at 12:00pm the schedule is as follows.
+                    <ul>
+                        <li>Node 1: 12:03pm - 12:06pm</li>
+                        <li>Node 2: 12:06pm - 12:09pm</li>
+                        <li>Node 0: 12:09pm - 12:12pm</li>
+                        <li>Node 1: 12:12pm - 12:15pm</li>
+                        <li>...</li>
+                    </ul>
+                    Until a block is added and then the timer resets using the new block timestamp plus 3 minutes as a starting point.
+                    <br>
+                    <br>
+                    Once a node's scheduled time arrives, the block is sent over the network for the other nodes to confirm.
+                    <br>
+                    <br>
+                    <h5>Block Validation and Voting</h5>
+                    Once a node receives the block is starts the validation process. It checks to ensure the block is being mined within the schedule and it's timestamp is accurate.
+                    <br>
+                    <br>
+                    It then confirms whether the block's previous hash matches the hash of the last added block.
+                    <br>
+                    <br>
+                    Then it verifies the user is a validator by checking whether the stake contract hash provided in the block has the required amount of funds.
+                    <br>
+                    <br>
+                    The block then proceeds to validate transactions. 
+                    This is done a different way for each type of transaction. 
+                    <ul>
+                        <li>For coinbase transactions it confirms the reward matches the correct block reward (decreasing as time goes on) plus fees from transactions.</li>
+                        <li>For regular currency transactions it confirms ownership of funds and whether there is enough funds to send the transaction.</li>
+                        <li>For contracts it confirms the contents are accurate and the signature matches the key.</li>
+                        <li>For NFT minting it confirms the contents are unique, and the signature is accurate.</li>
+                        <li>For NFT Transfers it confirms ownership of the NFT.</li>
+                    </ul>
+                    After the block is validated a signed vote is sent to all nodes declaring whether you accept or reject the block proposed.
+                    <br>
+                    <br>
+                    Once >50% of all validators have voted to accept a block the nodes add the block to the chain and proceed to establish the next schedule.
+                </p>
+            </div>
+        </div>
+        
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="static/js/main.js"></script>
+</html>
