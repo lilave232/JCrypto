@@ -324,6 +324,7 @@ public class Wallet {
     }
     
     public ArrayList<TransactionOutput> generateBaseOutputs(String timestamp) {
+        System.out.println("Generating Base Outputs");
         ArrayList<TransactionOutput> outputs = new ArrayList<>();
         HashMap<String,BigDecimal> outputValues = new HashMap<>();
         if (this.stakeContract == null) return new ArrayList<TransactionOutput>();
@@ -345,6 +346,7 @@ public class Wallet {
             handler.writeObject(session.getPath() + "/wallets/" + session.getWallet().name + "/baseOutputs", outputs);
             return outputs;
         } catch (IOException e) {
+            e.printStackTrace();
             return outputs;
         } 
     }
