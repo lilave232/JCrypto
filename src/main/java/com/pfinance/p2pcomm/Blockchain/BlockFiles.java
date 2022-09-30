@@ -478,7 +478,6 @@ public class BlockFiles {
                     String path = this.getWalletPath(output.address);
                     Files.createDirectories(Paths.get(path + "/utxos/"));
                     handler.writeObject(path + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);
-                    this.lentFundsUpdated = true;
                 }
             }
         }
@@ -505,7 +504,6 @@ public class BlockFiles {
                     String path = this.getWalletPath(output.address);
                     Files.createDirectories(Paths.get(path + "/utxos/"));
                     handler.writeObject(path + "/utxos/" + utxo.getPreviousHash() + "|" + String.valueOf(i), utxo);
-                    this.lentFundsUpdated = true;
                 }
             }
         }
@@ -935,7 +933,6 @@ public class BlockFiles {
                     saveUTXOLend(((LendContract) data).getLendTransaction(),bcontract);
                     deleteUTXO(((LendContract) data).getLendTransaction());
                     saveLendContract((LendContract) data);
-                    this.lentFundsUpdated = true;
                 } else if (data instanceof StakeContract) {
                     //System.out.println("SAVING STAKE CONTRACT");
                     saveStakeContract((StakeContract) data);
