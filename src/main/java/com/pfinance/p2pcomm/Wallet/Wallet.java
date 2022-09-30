@@ -428,7 +428,7 @@ public class Wallet {
         
         
         if (session.getMinFee() == null) {
-            throw new Exception("Unable to Get Quotes");
+            session.setMinFee(new BigDecimal(0));
         }
         fee = startingFee.add(session.getMinFee().multiply(new BigDecimal(txn.toBytes().length + new TransactionOutput(this.address,(outputValue.add(fee))).toBytes().length)));
         
