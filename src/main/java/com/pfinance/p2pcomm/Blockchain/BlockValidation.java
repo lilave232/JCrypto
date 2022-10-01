@@ -23,6 +23,7 @@ import static com.pfinance.p2pcomm.Main.session;
 import com.pfinance.p2pcomm.Wallet.*;
 import com.pfinance.p2pcomm.Session;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -112,7 +113,7 @@ public class BlockValidation {
             reward = getReward(transaction.getTimestamp()).add(reward);
             if (!transaction.getInputs().get(0).previousTxnHash.equals(DigestUtils.sha256Hex("Base"))
                 || !transaction.getInputs().get(0).outputIndex.equals(0)
-                || reward.compareTo(transaction.sum()) != 0) {return false;}
+                || reward.compareTo(transaction.sum().setScale(4, RoundingMode.HALF_UP)) != 0) {return false;}
             return true;
         } catch (Exception e) {e.printStackTrace();return false;}
     }
